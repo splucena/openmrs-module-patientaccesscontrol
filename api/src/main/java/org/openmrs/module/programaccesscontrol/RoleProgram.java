@@ -14,17 +14,23 @@
 package org.openmrs.module.programaccesscontrol;
 
 import java.io.Serializable;
-import org.openmrs.BaseOpenmrsObject;
+
 import org.openmrs.BaseOpenmrsMetadata;
+import org.openmrs.BaseOpenmrsObject;
+import org.openmrs.Program;
+import org.openmrs.Role;
 
 /**
- * It is a model class. It should extend either {@link BaseOpenmrsObject} or {@link BaseOpenmrsMetadata}.
+ * It is a model class. It should extend either {@link BaseOpenmrsObject} or
+ * {@link BaseOpenmrsMetadata}.
  */
-public class ProgramAccessControl extends BaseOpenmrsObject implements Serializable {
-
+public class RoleProgram extends BaseOpenmrsObject implements Serializable {
+	
 	private static final long serialVersionUID = 1L;
 	
-	private Integer id;
+	private Integer id;	
+	private Role role;	
+	private Program program;
 	
 	@Override
 	public Integer getId() {
@@ -36,4 +42,19 @@ public class ProgramAccessControl extends BaseOpenmrsObject implements Serializa
 		this.id = id;
 	}
 	
+	public Program getProgram() {
+		return program;
+	}
+	
+	public void setProgram(Program program) {
+		this.program = program;
+	}
+	
+	public Role getRole() {
+		return role;
+	}
+	
+	public void setRole(Role role) {
+		this.role = role;
+	}
 }

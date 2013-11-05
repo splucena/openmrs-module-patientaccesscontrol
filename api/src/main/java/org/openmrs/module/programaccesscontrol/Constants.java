@@ -11,20 +11,19 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.programaccesscontrol.api;
-
-import static org.junit.Assert.*;
-import org.junit.Test;
-import org.openmrs.api.context.Context;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+package org.openmrs.module.programaccesscontrol;
 
 /**
- * Tests {@link ${ProgramAccessControlService}}.
+ * Constants used by the Form Access Control module
  */
-public class  ProgramAccessControlServiceTest extends BaseModuleContextSensitiveTest {
+public class Constants {
 	
-	@Test
-	public void shouldSetupContext() {
-		assertNotNull(Context.getService(ProgramAccessControlService.class));
-	}
+	// Module properties
+	public static final String MODULE_ID = "programaccesscontrol";
+	
+	// Privileges
+	public static final String PRIV_VIEW_PROGRAM_ACCESS_CONTROL = "View Program Access Control";
+	
+	public static final String PRIV_MANAGE_PROGRAM_ACCESS_CONTROL = "Manage Program Access Control";
+	
 }

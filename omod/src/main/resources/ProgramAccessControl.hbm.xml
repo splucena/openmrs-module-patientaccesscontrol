@@ -4,7 +4,7 @@
     "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
 
 <hibernate-mapping package="org.openmrs.module.programaccesscontrol">
-
+	
 	<class name="RoleProgram" table="role_program">
 	
 		<cache usage="read-write"/>
@@ -33,5 +33,6 @@
 			<one-to-many class="org.openmrs.PatientProgram" />
 		</set>
     </joined-subclass>
-
+	
 </hibernate-mapping>
+

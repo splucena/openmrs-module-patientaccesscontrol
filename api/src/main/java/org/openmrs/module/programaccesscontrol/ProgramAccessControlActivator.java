@@ -13,8 +13,7 @@
  */
 package org.openmrs.module.programaccesscontrol;
 
-
-import org.apache.commons.logging.Log; 
+import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.ModuleActivator;
 
@@ -24,10 +23,11 @@ import org.openmrs.module.ModuleActivator;
 public class ProgramAccessControlActivator implements ModuleActivator {
 	
 	protected Log log = LogFactory.getLog(getClass());
-		
+	
 	/**
 	 * @see ModuleActivator#willRefreshContext()
 	 */
+	@Override
 	public void willRefreshContext() {
 		log.info("Refreshing Program Access Control Module");
 	}
@@ -35,6 +35,7 @@ public class ProgramAccessControlActivator implements ModuleActivator {
 	/**
 	 * @see ModuleActivator#contextRefreshed()
 	 */
+	@Override
 	public void contextRefreshed() {
 		log.info("Program Access Control Module refreshed");
 	}
@@ -42,6 +43,7 @@ public class ProgramAccessControlActivator implements ModuleActivator {
 	/**
 	 * @see ModuleActivator#willStart()
 	 */
+	@Override
 	public void willStart() {
 		log.info("Starting Program Access Control Module");
 	}
@@ -49,6 +51,7 @@ public class ProgramAccessControlActivator implements ModuleActivator {
 	/**
 	 * @see ModuleActivator#started()
 	 */
+	@Override
 	public void started() {
 		log.info("Program Access Control Module started");
 	}
@@ -56,6 +59,7 @@ public class ProgramAccessControlActivator implements ModuleActivator {
 	/**
 	 * @see ModuleActivator#willStop()
 	 */
+	@Override
 	public void willStop() {
 		log.info("Stopping Program Access Control Module");
 	}
@@ -63,8 +67,9 @@ public class ProgramAccessControlActivator implements ModuleActivator {
 	/**
 	 * @see ModuleActivator#stopped()
 	 */
+	@Override
 	public void stopped() {
 		log.info("Program Access Control Module stopped");
 	}
-		
+	
 }

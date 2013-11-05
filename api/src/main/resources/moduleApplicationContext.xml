@@ -33,7 +33,7 @@
 					<property name="target">
 						<bean class="${project.parent.groupId}.${project.parent.artifactId}.api.impl.ProgramAccessControlServiceImpl">
 							<property name="dao">
-								<bean class="${project.parent.groupId}.${project.parent.artifactId}.api.db.hibernate.HibernateProgramAccessControlDAO">
+								<bean class="${project.parent.groupId}.${project.parent.artifactId}.api.db.hibernate.HibernateRoleProgramDAO">
 									<property name="sessionFactory">
 										<ref bean="sessionFactory" />
 									</property>

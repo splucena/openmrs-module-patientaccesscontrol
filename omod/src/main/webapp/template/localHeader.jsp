@@ -5,9 +5,9 @@
 				code="admin.title.short" /></a></li>
 
 	<li
-		<c:if test='<%= request.getRequestURI().contains("/manage") %>'>class="active"</c:if>>
+		<c:if test='<%= request.getRequestURI().contains("/program") %>'>class="active"</c:if>>
 		<a
-		href="${pageContext.request.contextPath}/module/programaccesscontrol/manage.form"><spring:message
+		href="${pageContext.request.contextPath}/module/programaccesscontrol/program.list"><spring:message
 				code="programaccesscontrol.manage" /></a>
 	</li>
 	

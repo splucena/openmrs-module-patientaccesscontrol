@@ -26,11 +26,61 @@
 		<class>${project.parent.groupId}.${project.parent.artifactId}.extension.html.AdminList</class>
 	</extension>
 	
+	<!-- Adds link to gutter -->
+	<extension>
+	    <point>org.openmrs.gutter.tools</point>
+	    <class>${project.parent.groupId}.${project.parent.artifactId}.extension.html.GutterListExt</class>
+	</extension>
+	
+	
+	<!-- Advisors -->
+	<advice>
+		<point>org.openmrs.api.PatientService</point>
+		<class>@MODULE_PACKAGE@.api.advice.PatientServiceAdvisor</class>
+	</advice>
+	
+	<advice>
+		<point>org.openmrs.api.ProgramWorkflowService</point>
+		<class>@MODULE_PACKAGE@.api.advice.ProgramWorkflowServiceAdvice</class>
+	</advice>
+	
+	<advice>
+		<point>org.openmrs.api.UserService</point>
+		<class>@MODULE_PACKAGE@.api.advice.UserServiceAdvice</class>
+	</advice>
+	
+	<privilege>
+		<name>Manage Program Access Control</name>
+		<description>Able to manage and configure program access controls</description>
+	</privilege>
+	
+	<privilege>
+		<name>Manage Form Access Control</name>
+		<description>Able to view program access controls</description>
+	</privilege>
+	
+	<dwr>
+        <allow>
+            <create creator="new" javascript="DWRPatientListService">
+                <param name="class" value="@MODULE_PACKAGE@.web.dwr.DWRPatientListService"/>
+                <include method="listPatients"/>
+                <include method="listCountAndPatients"/>                
+            </create>
+        </allow>
+ 
+        <signatures>
+            <![CDATA[
+            import @MODULE_PACKAGE@.web.dwr.DWRPatientListService;
+            DWRPatientListService.listBatchOfPatients(String searchValue, boolean includeVoided, Integer start, Integer length);
+			DWRPatientListService.listPatients(String searchValue, boolean includeVoided);
+			DWRPatientListService.listCountAndPatients(String searchValue, Integer start, Integer length, boolean getMatchCount);
+            ]]>
+        </signatures>
+    </dwr>
+	
 	<!-- Maps hibernate file's, if present -->
-	<mappingFiles>
-				
-		ProgramAccessControl.hbm.xml
-				
+	<mappingFiles>				
+		ProgramAccessControl.hbm.xml				
 	</mappingFiles>
 
 	<!-- Internationalization -->
@@ -38,14 +88,6 @@
 	<messages>
 		<lang>en</lang>
 		<file>messages.properties</file>
-	</messages>
-	<messages>
-		<lang>fr</lang>
-		<file>messages_fr.properties</file>
-	</messages>
-	<messages>
-		<lang>es</lang>
-		<file>messages_es.properties</file>
 	</messages>
 	<!-- /Internationalization -->
 

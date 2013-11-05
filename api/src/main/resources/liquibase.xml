@@ -9,4 +9,79 @@
         for a list of supported elements and attributes
     -->
     
+    <changeSet author="Spencer" id="programaccesscontrol-2013-10-15-22:18">
+		<createTable tableName="program_patient_access_control">
+			<column autoIncrement="true" name="program_patient_access_control_id"
+				type="int">
+				<constraints nullable="false" primaryKey="true" />
+			</column>
+			<column defaultValueNumeric="0" name="program_id" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="role" type="varchar(50)">
+				<constraints nullable="false" />
+			</column>
+			<column defaultValueBoolean="false" name="can_add" type="BOOLEAN">
+				<constraints nullable="false" />
+			</column>
+			<column defaultValueBoolean="false" name="can_view" type="BOOLEAN">
+				<constraints nullable="false" />
+			</column>
+			<column defaultValueBoolean="false" name="can_update" type="BOOLEAN">
+				<constraints nullable="false" />
+			</column>
+			<column name="uuid" type="char(38)">
+				<constraints nullable="false" unique="true" />
+			</column>
+		</createTable>
+		<addForeignKeyConstraint constraintName="programaccesscontrol_program_fk"
+			baseTableName="program_patient_access_control" baseColumnNames="program_id"
+			referencedTableName="program" referencedColumnNames="program_id" />
+		<addForeignKeyConstraint constraintName="programaccesscontrol_role_fk"
+			baseTableName="program_patient_access_control" baseColumnNames="role"
+			referencedTableName="role" referencedColumnNames="role" />
+		<createIndex indexName="programaccesscontrol_program_role_unique"
+			tableName="program_patient_access_control" unique="true">
+			<column name="program_id" />
+			<column name="role" />
+		</createIndex>
+		<modifySql dbms="mssql">
+			<replace replace="CHAR(38)"
+				with="UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID()" />
+		</modifySql>
+	</changeSet>
+	
+	<changeSet author="Spencer" id="programaccesscontrol-2013-10-31-22:48">
+		<dropTable tableName="program_patient_access_control" />
+		<createTable tableName="role_program">
+			<column autoIncrement="true" name="role_program_id" type="int">
+				<constraints nullable="false" primaryKey="true" />
+			</column>
+			<column name="role" type="varchar(50)">
+				<constraints nullable="false" />
+			</column>
+			<column defaultValueNumeric="0" name="program_id" type="int">
+				<constraints nullable="true" />
+			</column>
+			<column name="uuid" type="char(38)">
+				<constraints nullable="false" unique="true" />
+			</column>
+		</createTable>
+		<addForeignKeyConstraint constraintName="role_program_program_fk"
+			baseTableName="role_program" baseColumnNames="program_id"
+			referencedTableName="program" referencedColumnNames="program_id" />
+		<addForeignKeyConstraint constraintName="role_program_role_fk"
+			baseTableName="role_program" baseColumnNames="role"
+			referencedTableName="role" referencedColumnNames="role" />
+		<createIndex indexName="role_program_role_program_unique"
+			tableName="role_program" unique="true">
+			<column name="role" />
+			<column name="program_id" />
+		</createIndex>
+		<modifySql dbms="mssql">
+			<replace replace="CHAR(38)"
+				with="UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID()" />
+		</modifySql>
+	</changeSet>
+    
 </databaseChangeLog>

@@ -13,9 +13,14 @@
  */
 package org.openmrs.module.programaccesscontrol.web.controller;
 
+import java.util.List;
+import java.util.Vector;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.Program;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.programaccesscontrol.Constants;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,12 +30,27 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * The main controller.
  */
 @Controller
-public class  ProgramAccessControlManageController {
-	
+@RequestMapping(value = "/module/" + Constants.MODULE_ID + "/program")
+public class ProgramAccessControlListController {
+
 	protected final Log log = LogFactory.getLog(getClass());
-	
-	@RequestMapping(value = "/module/programaccesscontrol/manage", method = RequestMethod.GET)
-	public void manage(ModelMap model) {
-		model.addAttribute("user", Context.getAuthenticatedUser());
+
+	@RequestMapping(method = RequestMethod.GET)
+	public String programList(ModelMap model) {
+		List<Program> programList = new Vector<Program>();
+
+		// only fill the Object if the user has authenticated properly
+		if (Context.isAuthenticated()) {
+			Program defaultProgram = new Program();
+			defaultProgram.setName("Default");
+			defaultProgram.setDescription("Default access control for patients not in any program");
+			programList.add(defaultProgram);
+
+			programList.addAll(Context.getProgramWorkflowService().getAllPrograms());
+		}
+
+		model.addAttribute("programList", programList);
+
+		return "module/" + Constants.MODULE_ID + "/programList";
 	}
 }
