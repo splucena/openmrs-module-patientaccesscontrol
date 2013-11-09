@@ -21,6 +21,22 @@
 		
 	</class>
 	
+	<class name="RolePatient" table="role_patient">
+	
+		<cache usage="read-write"/>
+
+		<id name="id" type="int" column="role_patient_id" unsaved-value="0">
+			<generator class="native" />
+		</id>
+		
+		<many-to-one name="role" class="org.openmrs.Role" not-null="true" column="role" />
+		
+		<many-to-one name="patient" class="org.openmrs.Patient" not-null="false" column="patient_id" />
+				
+		<property name="uuid" not-null="true" type="java.lang.String" column="uuid" />
+		
+	</class>
+	
 	<joined-subclass name="ModulePatient" table="patient" extends="org.openmrs.Patient">
 		<key column="patient_id" not-null="true" on-delete="cascade" />
 		

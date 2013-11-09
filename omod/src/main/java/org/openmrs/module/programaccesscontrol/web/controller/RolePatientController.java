@@ -20,12 +20,12 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openmrs.Program;
+import org.openmrs.Patient;
 import org.openmrs.Role;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.programaccesscontrol.Constants;
-import org.openmrs.module.programaccesscontrol.RoleProgram;
-import org.openmrs.module.programaccesscontrol.api.ProgramAccessControlService;
+import org.openmrs.module.programaccesscontrol.RolePatient;
+import org.openmrs.module.programaccesscontrol.api.RolePatientService;
 import org.openmrs.util.RoleConstants;
 import org.openmrs.web.WebConstants;
 import org.springframework.stereotype.Controller;
@@ -36,39 +36,59 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-public class ProgramAccessControlController {
+public class RolePatientController {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	@RequestMapping(method = RequestMethod.GET, value = "module/" + Constants.MODULE_ID + "/programAccessControlEdit")
-	public void managePatientAccessControls() {
+	@RequestMapping(method = RequestMethod.GET, value = "module/" + Constants.MODULE_ID + "/rolePatientEdit")
+	public void manageRolePatient() {
 		if (!hasPrivilege()) {
 			return;
 		}
 	}
 
-	@RequestMapping(method = RequestMethod.POST, value = "module/" + Constants.MODULE_ID + "/programAccessControlEdit")
+	@RequestMapping(method = RequestMethod.POST, value = "module/" + Constants.MODULE_ID + "/rolePatientEdit")
 	public void obSubmit(
-			@ModelAttribute("programAccessControlForm") ProgramAccessControlForm programAccessControlForm,
+			@ModelAttribute("rolePatientForm") RolePatientForm rolePatientForm,
 			Errors errors, HttpSession session) {
 		if (!hasPrivilege()) {
 			errors.reject("auth.invalid");
 			return;
 		}
 
-		Program program = programAccessControlForm.getProgram();
-		ProgramAccessControlService svc = Context.getService(ProgramAccessControlService.class);
-		for (RoleViewModel roleView : programAccessControlForm.getRoleViewModels()) {
-			Role role = roleView.getRole();
-			if (roleView.isCanView()) {
-				if (svc.getRoleProgram(program, role) == null) {
-					RoleProgram roleProgram = new RoleProgram();
-					roleProgram.setRole(role);
-					roleProgram.setProgram(program);
-					svc.saveRoleProgram(roleProgram);
+		Patient patient = rolePatientForm.getPatient();
+		RolePatientService svc = Context.getService(RolePatientService.class);
+
+		if (rolePatientForm.isAllowAll()) {
+			svc.deleteRolePatients(patient);
+		} else {
+			for (RoleViewModel roleView : rolePatientForm.getRoleViewModels()) {
+				Role role = roleView.getRole();
+				boolean hasRole = false;
+				if (roleView.isCanView()) {
+					hasRole = true;
+					if (svc.getRolePatient(role, patient) == null) {
+						RolePatient rolePatient = new RolePatient();
+						rolePatient.setRole(role);
+						rolePatient.setPatient(patient);
+						svc.saveRolePatient(rolePatient);
+					}
+				} else {
+					svc.deleteRolePatient(role, patient);
 				}
-			} else {
-				svc.deleteRoleProgram(role, program);
+				Role superUser = Context.getUserService().getRole(RoleConstants.SUPERUSER);
+				if (!hasRole) {
+					if (svc.getRolePatient(superUser, patient) == null) {
+						RolePatient rolePatient = new RolePatient();
+						rolePatient.setRole(superUser);
+						rolePatient.setPatient(patient);
+						svc.saveRolePatient(rolePatient);
+					}
+				} else {
+					if (svc.getRolePatient(superUser, patient) != null) {
+						svc.deleteRolePatient(superUser, patient);
+					}
+				}
 			}
 		}
 
@@ -80,14 +100,14 @@ public class ProgramAccessControlController {
 		return RoleConstants.SUPERUSER;
 	}
 
-	@ModelAttribute("program")
-	public Program getProgram(@RequestParam("programId") Program program) {
-		return program;
+	@ModelAttribute("patient")
+	public Patient getPatient(@RequestParam("patientId") Patient patient) {
+		return patient;
 	}
 
-	@ModelAttribute("programAccessControlForm")
-	public ProgramAccessControlForm getProgramPatientAccessControls(@RequestParam("programId") Program program) {
-		List<Role> roles = Context.getService(ProgramAccessControlService.class).getRoles(program);
+	@ModelAttribute("rolePatientForm")
+	public RolePatientForm getPatientPatientAccessControls(@RequestParam("patientId") Patient patient) {
+		List<Role> roles = Context.getService(RolePatientService.class).getRoles(patient);
 		List<Role> allRoles = Context.getUserService().getAllRoles();
 		List<RoleViewModel> roleViews = new ArrayList<RoleViewModel>();
 		for (Role role : allRoles) {
@@ -96,10 +116,10 @@ public class ProgramAccessControlController {
 			}
 			roleViews.add(new RoleViewModel(role, roles.contains(role)));
 		}
-		return new ProgramAccessControlForm(program, roleViews);
+		return new RolePatientForm(patient, roleViews, roles.isEmpty());
 	}
 
 	private boolean hasPrivilege() {
-		return Context.hasPrivilege(Constants.PRIV_MANAGE_PROGRAM_ACCESS_CONTROL);
+		return Context.hasPrivilege(Constants.PRIV_MANAGE_ROLE_PATIENT);
 	}
 }

@@ -19,7 +19,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Role;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.programaccesscontrol.api.ProgramAccessControlService;
+import org.openmrs.module.programaccesscontrol.api.RoleProgramService;
+import org.openmrs.module.programaccesscontrol.api.RolePatientService;
 import org.springframework.aop.AfterReturningAdvice;
 
 /**
@@ -36,28 +37,10 @@ public class UserServiceAdvice implements AfterReturningAdvice {
 	@Override
 	public void afterReturning(Object returnVal, Method method, Object[] args, Object target) throws Throwable {
 		if (method.getName().equals("purgeRole")) {
-			ProgramAccessControlService svc = Context.getService(ProgramAccessControlService.class);
 			Role role = (Role) args[0];
-			svc.deleteRolePrograms(role);
+			
+			Context.getService(RoleProgramService.class).deleteRolePrograms(role);
+			Context.getService(RolePatientService.class).deleteRolePatients(role);
 		}
-		//		else if (method.getName().equals("saveRole")) {
-		//			Context.addProxyPrivilege("Manage Program Access Control");
-		//			ProgramAccessControlService svc = Context.getService(ProgramAccessControlService.class);
-		//			Role role = (Role) returnVal;
-		//			for (Program program : Context.getProgramWorkflowService().getAllPrograms()) {
-		//				if (role.getRole().equals(RoleConstants.SUPERUSER)) {
-		//					continue;
-		//				}
-		//				if (svc.getProgramPatientAccessControl(program, role) == null) {
-		//					RoleProgram accessControl = new RoleProgram();
-		//					accessControl.setProgram(program);
-		//					accessControl.setRole(role);
-		//					accessControl.setCanAdd(false);
-		//					accessControl.setCanUpdate(false);
-		//					accessControl.setCanView(false);
-		//					svc.saveProgramPatientAccessControl(accessControl);
-		//				}
-		//			}
-		//		}
 	}
 }

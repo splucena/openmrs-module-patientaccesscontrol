@@ -50,13 +50,23 @@
 	</advice>
 	
 	<privilege>
-		<name>Manage Program Access Control</name>
-		<description>Able to manage and configure program access controls</description>
+		<name>Manage Role Program</name>
+		<description>Able to manage and configure role program access controls</description>
 	</privilege>
 	
 	<privilege>
-		<name>Manage Form Access Control</name>
-		<description>Able to view program access controls</description>
+		<name>View Role Program</name>
+		<description>Able to view role program access controls</description>
+	</privilege>
+	
+	<privilege>
+		<name>Manage Role Patient</name>
+		<description>Able to manage and configure role patient access controls</description>
+	</privilege>
+	
+	<privilege>
+		<name>View Role Patient</name>
+		<description>Able to view role patient access controls</description>
 	</privilege>
 	
 	<dwr>

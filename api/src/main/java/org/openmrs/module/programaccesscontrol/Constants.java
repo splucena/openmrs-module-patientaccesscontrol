@@ -14,7 +14,7 @@
 package org.openmrs.module.programaccesscontrol;
 
 /**
- * Constants used by the Form Access Control module
+ * Constants used by the Program Access Control module
  */
 public class Constants {
 	
@@ -22,8 +22,12 @@ public class Constants {
 	public static final String MODULE_ID = "programaccesscontrol";
 	
 	// Privileges
-	public static final String PRIV_VIEW_PROGRAM_ACCESS_CONTROL = "View Program Access Control";
+	public static final String PRIV_VIEW_ROLE_PROGRAM = "View Role Program";
 	
-	public static final String PRIV_MANAGE_PROGRAM_ACCESS_CONTROL = "Manage Program Access Control";
+	public static final String PRIV_MANAGE_ROLE_PROGRAM = "Manage Role Program";
+	
+	public static final String PRIV_VIEW_ROLE_PATIENT = "View Role Patient";
+	
+	public static final String PRIV_MANAGE_ROLE_PATIENT = "Manage Role Patient";
 	
 }

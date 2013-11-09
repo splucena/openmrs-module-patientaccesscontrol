@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="Manage Program Access Control" otherwise="/login.htm" redirect="/module/programaccesscontrol/program.list" />
+<openmrs:require privilege="Manage Role Program" otherwise="/login.htm" redirect="/module/programaccesscontrol/program.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 <%@ include file="template/localHeader.jsp" %>
@@ -20,7 +20,7 @@
 				<th> <openmrs:message code="general.id"/> </th>
 				<th> <openmrs:message code="general.name"/> </th>
 				<th> <openmrs:message code="general.description"/> </th>
-				<th> <openmrs:message code="programaccesscontrol.patientAccessControl"/> </th>
+				<th> <openmrs:message code="programaccesscontrol.roleProgram"/> </th>
 			</tr>
 			<c:forEach var="program" items="${programList}">
 				<tr>
@@ -42,7 +42,7 @@
 							${program.description}
 						</td>
 						<td valign="top">
-							<a href="programAccessControlEdit.form?programId=${program.programId}"><openmrs:message code="programaccesscontrol.patientAccessControl.manage"/></a>
+							<a href="roleProgramEdit.form?programId=${program.programId}"><openmrs:message code="programaccesscontrol.roleProgram.manage"/></a>
 						</td>
 					</c:if>
 				</tr>

@@ -5,10 +5,17 @@
 				code="admin.title.short" /></a></li>
 
 	<li
-		<c:if test='<%= request.getRequestURI().contains("/program") %>'>class="active"</c:if>>
+		<c:if test='<%= request.getRequestURI().contains("/roleProgram") %>'>class="active"</c:if>>
 		<a
-		href="${pageContext.request.contextPath}/module/programaccesscontrol/program.list"><spring:message
-				code="programaccesscontrol.manage" /></a>
+		href="${pageContext.request.contextPath}/module/programaccesscontrol/roleProgram.list"><spring:message
+				code="programaccesscontrol.roleProgram.title" /></a>
+	</li>
+	
+	<li
+		<c:if test='<%= request.getRequestURI().contains("/rolePatient") %>'>class="active"</c:if>>
+		<a
+		href="${pageContext.request.contextPath}/module/programaccesscontrol/rolePatientList.htm"><spring:message
+				code="programaccesscontrol.rolePatient.title" /></a>
 	</li>
 	
 	<!-- Add further links here -->

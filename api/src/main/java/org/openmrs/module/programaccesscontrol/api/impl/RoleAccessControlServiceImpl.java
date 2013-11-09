@@ -15,7 +15,6 @@ package org.openmrs.module.programaccesscontrol.api.impl;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,162 +22,62 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
-import org.openmrs.PatientProgram;
 import org.openmrs.Program;
-import org.openmrs.Role;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.programaccesscontrol.PatientProgramModel;
-import org.openmrs.module.programaccesscontrol.RoleProgram;
-import org.openmrs.module.programaccesscontrol.api.ProgramAccessControlService;
-import org.openmrs.module.programaccesscontrol.api.db.RoleProgramDAO;
+import org.openmrs.module.programaccesscontrol.api.RoleAccessControlService;
+import org.openmrs.module.programaccesscontrol.api.RolePatientService;
+import org.openmrs.module.programaccesscontrol.api.RoleProgramService;
+import org.openmrs.module.programaccesscontrol.api.db.RoleAccessControlDAO;
 import org.openmrs.util.OpenmrsUtil;
-import org.openmrs.util.RoleConstants;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * It is a default implementation of {@link ProgramAccessControlService}.
+ * It is a default implementation of {@link RoleAccessControlService}.
  */
-public class ProgramAccessControlServiceImpl extends BaseOpenmrsService implements ProgramAccessControlService {
+public class RoleAccessControlServiceImpl extends BaseOpenmrsService implements RoleAccessControlService {
 	
 	protected final Log log = LogFactory.getLog(this.getClass());
 	
-	private RoleProgramDAO dao;
+	private RoleAccessControlDAO dao;
 	
 	/**
 	 * @param dao the dao to set
 	 */
-	public void setDao(RoleProgramDAO dao) {
+	public void setDao(RoleAccessControlDAO dao) {
 		this.dao = dao;
 	}
 	
 	/**
 	 * @return the dao
 	 */
-	public RoleProgramDAO getDao() {
+	public RoleAccessControlDAO getDao() {
 		return dao;
-	}
-	
-	@Override
-	public List<Role> getRoles(Program program) {
-		return dao.getRoles(program);
-	}
-	
-	@Override
-	public void saveRoleProgram(RoleProgram programPatientAccessControl) {
-		dao.saveRoleProgram(programPatientAccessControl);
-	}
-	
-	@Override
-	public RoleProgram getRoleProgram(Program program, Role role) {
-		return dao.getRoleProgram(program, role);
-	}
-	
-	@Override
-	public void deleteRoleProgram(Role role, Program program) {
-		dao.deleteRoleProgram(role, program);
-	}
-	
-	@Override
-	public void deleteRolePrograms(Role role) {
-		dao.deleteRolePrograms(role);
-	}
-	
-	@Override
-	public void deleteRolePrograms(Program program) {
-		dao.deleteRolePrograms(program);
 	}
 	
 	@Override
 	@Transactional(readOnly = true)
 	public boolean hasPrivilege(Patient patient) {
-		try {
-			if (patient == null) {
-				return true;
-			}
-			
-			Set<Role> roles = Context.getUserContext().getAllRoles();
-			
-			for (Role role : roles) {
-				if (hasPrivilege(role, patient)) {
-					return true;
-				}
-			}
-			
-			return false;
-		}
-		catch (Exception e) {
-			throw new APIException(e);
-		}
+		return Context.getService(RoleProgramService.class).hasPrivilege(patient)
+		        || Context.getService(RolePatientService.class).hasPrivilege(patient);
 	}
 	
-	private boolean hasPrivilege(Role role, Patient patient) {
-		if (role.getRole().equals(RoleConstants.SUPERUSER)) {
-			return true;
-		}
-		boolean enrolled = false;
-		for (PatientProgram patientProgram : Context.getProgramWorkflowService().getPatientPrograms(patient, null, null,
-		    null, null, null, false)) {
-			if (!patientProgram.getActive()) {
-				continue;
-			}
-			enrolled = true;
-			if (hasPrivilege(role, patientProgram.getProgram())) {
-				return true;
-			}
-		}
-		// not in any programs
-		if (!enrolled) {
-			return dao.getDefaultRoleProgram(role) != null;
-		} else {
-			return false;
-		}
-	}
-	
-	private boolean hasPrivilege(Role role, Program program) {
-		if (role.getRole().equals(RoleConstants.SUPERUSER)) {
-			return true;
-		}
-		RoleProgram fac = getRoleProgram(program, role);
-		return fac != null;
-	}
-	
-	@Override
 	public List<Program> getPrograms() {
-		try {
-			Set<Role> roles = Context.getUserContext().getAllRoles();
-			for (Role role : roles) {
-				if (role.getRole().equals(RoleConstants.SUPERUSER)) {
-					return Context.getProgramWorkflowService().getAllPrograms();
-				}
-			}
-			
-			return dao.getPrograms(roles);
-		}
-		catch (Exception e) {
-			throw new APIException(e);
-		}
+		return Context.getService(RoleProgramService.class).getPrograms();
+	}
+	
+	public List<Integer> getExcludePatients() {
+		return Context.getService(RolePatientService.class).getExcludedPatients();
 	}
 	
 	private boolean canViewPatientsNotInPrograms() {
-		try {
-			Set<Role> roles = Context.getUserContext().getAllRoles();
-			for (Role role : roles) {
-				if (role.getRole().equals(RoleConstants.SUPERUSER)) {
-					return true;
-				}
-			}
-			
-			return !dao.getDefaultRolePrograms(roles).isEmpty();
-		}
-		catch (Exception e) {
-			throw new APIException(e);
-		}
+		return Context.getService(RoleProgramService.class).canViewPatientsNotInPrograms();
 	}
 	
 	/**
-	 * @see ProgramAccessControlService#getCountOfPatients(String)
+	 * @see RoleAccessControlService#getCountOfPatients(String)
 	 */
 	@Override
 	public Integer getCountOfPatients(String query) {
@@ -186,15 +85,15 @@ public class ProgramAccessControlServiceImpl extends BaseOpenmrsService implemen
 		boolean excludePatientNotInPrograms = !canViewPatientsNotInPrograms();
 		if (StringUtils.isEmpty(query)) {
 			return OpenmrsUtil.convertToInteger(dao.getCountOfPatients(null, null, emptyList, false, false, getPrograms(),
-			    excludePatientNotInPrograms));
+			    excludePatientNotInPrograms, getExcludePatients()));
 		} else {
 			return OpenmrsUtil.convertToInteger(dao.getCountOfPatients(null, query, emptyList, false, true, getPrograms(),
-			    excludePatientNotInPrograms));
+			    excludePatientNotInPrograms, getExcludePatients()));
 		}
 	}
 	
 	/**
-	 * @see ProgramAccessControlService#getPatients(String, Integer, Integer)
+	 * @see RoleAccessControlService#getPatients(String, Integer, Integer)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -202,15 +101,15 @@ public class ProgramAccessControlServiceImpl extends BaseOpenmrsService implemen
 		boolean excludePatientNotInPrograms = !canViewPatientsNotInPrograms();
 		if (StringUtils.isEmpty(query)) {
 			return dao.getPatients(null, null, Collections.EMPTY_LIST, false, start, length, false, getPrograms(),
-			    excludePatientNotInPrograms);
+			    excludePatientNotInPrograms, getExcludePatients());
 		} else {
 			return dao.getPatients(query, null, Collections.EMPTY_LIST, false, start, length, true, getPrograms(),
-			    excludePatientNotInPrograms);
+			    excludePatientNotInPrograms, getExcludePatients());
 		}
 	}
 	
 	/**
-	 * @see ProgramAccessControlService#getPatients(String, Integer, Integer)
+	 * @see RoleAccessControlService#getPatients(String, Integer, Integer)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -218,15 +117,15 @@ public class ProgramAccessControlServiceImpl extends BaseOpenmrsService implemen
 		boolean excludePatientNotInPrograms = !canViewPatientsNotInPrograms();
 		if (StringUtils.isEmpty(query)) {
 			return dao.getPatientPrograms(null, null, Collections.EMPTY_LIST, false, start, length, false, getPrograms(),
-			    excludePatientNotInPrograms);
+			    excludePatientNotInPrograms, getExcludePatients());
 		} else {
 			return dao.getPatientPrograms(query, null, Collections.EMPTY_LIST, false, start, length, true, getPrograms(),
-			    excludePatientNotInPrograms);
+			    excludePatientNotInPrograms, getExcludePatients());
 		}
 	}
 	
 	/**
-	 * @see ProgramAccessControlService#getCountOfPatients(String)
+	 * @see RoleAccessControlService#getCountOfPatients(String)
 	 */
 	@Override
 	public Integer getCountOfPatientPrograms(String query) {
@@ -234,10 +133,10 @@ public class ProgramAccessControlServiceImpl extends BaseOpenmrsService implemen
 		boolean excludePatientNotInPrograms = !canViewPatientsNotInPrograms();
 		if (StringUtils.isEmpty(query)) {
 			return OpenmrsUtil.convertToInteger(dao.getCountOfPatientPrograms(null, null, emptyList, false, false,
-			    getPrograms(), excludePatientNotInPrograms));
+			    getPrograms(), excludePatientNotInPrograms, getExcludePatients()));
 		} else {
 			return OpenmrsUtil.convertToInteger(dao.getCountOfPatientPrograms(null, query, emptyList, false, true,
-			    getPrograms(), excludePatientNotInPrograms));
+			    getPrograms(), excludePatientNotInPrograms, getExcludePatients()));
 		}
 	}
 	
@@ -245,7 +144,7 @@ public class ProgramAccessControlServiceImpl extends BaseOpenmrsService implemen
 	public List<Patient> getPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
 	                                 boolean matchIdentifierExactly, Integer start, Integer length) throws APIException {
 		return dao.getPatients(name, identifier, identifierTypes, matchIdentifierExactly, start, length, true,
-		    getPrograms(), !canViewPatientsNotInPrograms());
+		    getPrograms(), !canViewPatientsNotInPrograms(), getExcludePatients());
 	}
 	
 }

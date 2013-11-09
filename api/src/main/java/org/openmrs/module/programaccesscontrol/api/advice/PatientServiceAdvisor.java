@@ -26,7 +26,7 @@ import org.openmrs.PatientIdentifierType;
 import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.programaccesscontrol.Constants;
-import org.openmrs.module.programaccesscontrol.api.ProgramAccessControlService;
+import org.openmrs.module.programaccesscontrol.api.RoleAccessControlService;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.aop.Advisor;
 
@@ -54,7 +54,7 @@ public class PatientServiceAdvisor implements Advisor {
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 			String methodName = invocation.getMethod().getName();
 			if (methodName.equals("getCountOfPatients")) {
-				return Context.getService(ProgramAccessControlService.class).getCountOfPatients(
+				return Context.getService(RoleAccessControlService.class).getCountOfPatients(
 				    (String) invocation.getArguments()[0]);
 			} else if (methodName.equals("getPatients")
 			        && (invocation.getArguments().length == 3 || invocation.getArguments().length == 6)) {
@@ -63,11 +63,11 @@ public class PatientServiceAdvisor implements Advisor {
 				Object lengthArg = invocation.getArguments()[length - 1];
 				if ((startArg != null && startArg instanceof Integer) || (lengthArg != null && lengthArg instanceof Integer)) {
 					if (length == 3) {
-						return Context.getService(ProgramAccessControlService.class).getPatients(
+						return Context.getService(RoleAccessControlService.class).getPatients(
 						    (String) invocation.getArguments()[0], (Integer) invocation.getArguments()[1],
 						    (Integer) invocation.getArguments()[2]);
 					} else {
-						return Context.getService(ProgramAccessControlService.class).getPatients(
+						return Context.getService(RoleAccessControlService.class).getPatients(
 						    (String) invocation.getArguments()[0], (String) invocation.getArguments()[1],
 						    (List<PatientIdentifierType>) invocation.getArguments()[2],
 						    (Boolean) invocation.getArguments()[3], (Integer) invocation.getArguments()[4],
@@ -81,7 +81,7 @@ public class PatientServiceAdvisor implements Advisor {
 			if (methodName.startsWith("getPatients") || methodName.equals("findPatients")) {
 				List<Patient> patients = (List<Patient>) o;
 				Iterator<Patient> i = patients.iterator();
-				ProgramAccessControlService svc = Context.getService(ProgramAccessControlService.class);
+				RoleAccessControlService svc = Context.getService(RoleAccessControlService.class);
 				while (i.hasNext()) {
 					Patient patient = i.next();
 					if (!svc.hasPrivilege(patient)) {
@@ -89,7 +89,7 @@ public class PatientServiceAdvisor implements Advisor {
 					}
 				}
 			} else if (methodName.startsWith("getPatient") && o instanceof Patient) {
-				ProgramAccessControlService svc = Context.getService(ProgramAccessControlService.class);
+				RoleAccessControlService svc = Context.getService(RoleAccessControlService.class);
 				Patient patient = (Patient) o;
 				if (!svc.hasPrivilege(patient)) {
 					throw new APIAuthenticationException(OpenmrsUtil.getMessage(Constants.MODULE_ID + ".privilegeRequired",

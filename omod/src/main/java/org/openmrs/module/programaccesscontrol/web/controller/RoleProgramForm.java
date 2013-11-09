@@ -4,12 +4,12 @@ import java.util.List;
 
 import org.openmrs.Program;
 
-public class ProgramAccessControlForm {
+public class RoleProgramForm {
 
 	private Program program;
 	private List<RoleViewModel> roleViewModels;
 
-	public ProgramAccessControlForm(Program program, List<RoleViewModel> roleViewModels) {
+	public RoleProgramForm(Program program, List<RoleViewModel> roleViewModels) {
 		this.program = program;
 		this.roleViewModels = roleViewModels;
 	}

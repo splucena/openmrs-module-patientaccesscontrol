@@ -19,7 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Program;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.programaccesscontrol.api.ProgramAccessControlService;
+import org.openmrs.module.programaccesscontrol.api.RoleProgramService;
 import org.springframework.aop.AfterReturningAdvice;
 
 /**
@@ -36,23 +36,9 @@ public class ProgramWorkflowServiceAdvice implements AfterReturningAdvice {
 	@Override
 	public void afterReturning(Object returnVal, Method method, Object[] args, Object target) throws Throwable {
 		if (method.getName().equals("purgeProgram")) {
-			ProgramAccessControlService svc = Context.getService(ProgramAccessControlService.class);
+			RoleProgramService svc = Context.getService(RoleProgramService.class);
 			Program program = (Program) args[0];
 			svc.deleteRolePrograms(program);
 		}
-		//		else if (method.getName().equals("createOrUpdateProgram") || method.getName().equals("saveProgram")) {
-		//			Context.addProxyPrivilege("Manage Program Access Control");
-		//			ProgramAccessControlService svc = Context.getService(ProgramAccessControlService.class);
-		//			Program program = (Program) args[0];
-		//			for (Role role : Context.getUserService().getAllRoles()) {
-		//				if (role.getRole().equals(RoleConstants.SUPERUSER)) {
-		//					continue;
-		//				}
-		//				// check default
-		//				if (svc.getProgramPatientAccessControl(program, role) == null) {
-		//					
-		//				}
-		//			}
-		//		}
 	}
 }

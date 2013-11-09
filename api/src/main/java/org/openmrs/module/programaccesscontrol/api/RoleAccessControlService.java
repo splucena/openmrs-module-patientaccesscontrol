@@ -17,15 +17,11 @@ import java.util.List;
 
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
-import org.openmrs.Program;
-import org.openmrs.Role;
 import org.openmrs.annotation.Authorized;
 import org.openmrs.api.APIException;
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.api.PatientService;
-import org.openmrs.module.programaccesscontrol.Constants;
 import org.openmrs.module.programaccesscontrol.PatientProgramModel;
-import org.openmrs.module.programaccesscontrol.RoleProgram;
 import org.openmrs.util.PrivilegeConstants;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,82 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @see org.openmrs.api.context.Context
  */
 @Transactional
-public interface ProgramAccessControlService extends OpenmrsService {
-	
-	/**
-	 * Get the roles for program that has view access to
-	 * 
-	 * @param program the program to get
-	 * @return the list of roles with view access for the given program
-	 * @throws APIException
-	 * @should return all roles with view for the given Program
-	 * @should return default roles when program is null
-	 */
-	@Transactional(readOnly = true)
-	@Authorized(Constants.PRIV_VIEW_PROGRAM_ACCESS_CONTROL)
-	public List<Role> getRoles(Program program);
-	
-	/**
-	 * Create or update the given Role Program in the database
-	 * 
-	 * @param roleProgram the RoleProgram to save
-	 * @return the RoleProgram that was saved
-	 * @throws APIException
-	 * @should save given roleProgram successfully
-	 */
-	@Transactional
-	@Authorized(Constants.PRIV_MANAGE_PROGRAM_ACCESS_CONTROL)
-	public void saveRoleProgram(RoleProgram roleProgram);
-	
-	/**
-	 * Get role program by program and role
-	 * 
-	 * @param program the program to get
-	 * @param role the role to get
-	 * @return the role program with the program and role given
-	 * @throws APIException
-	 * @should return the role program with the program and role given
-	 */
-	@Transactional(readOnly = true)
-	@Authorized(Constants.PRIV_VIEW_PROGRAM_ACCESS_CONTROL)
-	public RoleProgram getRoleProgram(Program program, Role role);
-	
-	/**
-	 * Completely removes Role Programs with the given Role and Program from the database. This is
-	 * not reversible.
-	 * 
-	 * @param role
-	 * @param program
-	 * @throws APIException
-	 * @should delete role program for role and program successfully
-	 */
-	@Transactional
-	@Authorized(Constants.PRIV_MANAGE_PROGRAM_ACCESS_CONTROL)
-	public void deleteRoleProgram(Role role, Program program);
-	
-	/**
-	 * Completely removes Role Programs with the given Role from the database. This is not
-	 * reversible.
-	 * 
-	 * @param role
-	 * @throws APIException
-	 * @should delete role programs for role successfully
-	 */
-	@Transactional
-	@Authorized(Constants.PRIV_MANAGE_PROGRAM_ACCESS_CONTROL)
-	public void deleteRolePrograms(Role role);
-	
-	/**
-	 * Completely removes Role Programs with the given Program from the database. This is not
-	 * reversible.
-	 * 
-	 * @param program
-	 * @throws APIException
-	 * @should delete role programs for program successfully
-	 */
-	@Transactional
-	@Authorized(Constants.PRIV_MANAGE_PROGRAM_ACCESS_CONTROL)
-	public void deleteRolePrograms(Program program);
+public interface RoleAccessControlService extends OpenmrsService {
 	
 	/**
 	 * Checks whether or not currently authenticated user has view privilege for the given patient
@@ -133,16 +54,6 @@ public interface ProgramAccessControlService extends OpenmrsService {
 	 */
 	@Transactional(readOnly = true)
 	public boolean hasPrivilege(Patient patient);
-	
-	/**
-	 * Get the programs the currently authenticated user has view privilege to
-	 * 
-	 * @return the list of programs authenticated user has view privilege to
-	 * @throws APIException
-	 * @should return all programs authenticated user has view privilege to
-	 */
-	@Transactional(readOnly = true)
-	public List<Program> getPrograms();
 	
 	/**
 	 * Similar to {@link PatientService#getCountOfPatients(String)}, but only returns count of
@@ -198,9 +109,9 @@ public interface ProgramAccessControlService extends OpenmrsService {
 	                                 boolean matchIdentifierExactly, Integer start, Integer length) throws APIException;
 	
 	/**
-	 * Similar to {@link ProgramAccessControlService#getCountOfPatients(String)}, but also returns
-	 * the programs the patients are enrolled in. If patient is enrolled in multiple programs, they
-	 * will also be included multiple times
+	 * Similar to {@link RoleAccessControlService#getCountOfPatients(String)}, but also returns the
+	 * programs the patients are enrolled in. If patient is enrolled in multiple programs, they will
+	 * also be included multiple times
 	 * 
 	 * @param query the string to search on
 	 * @return the number of patients and programs matching the given search phrase, and
@@ -212,8 +123,8 @@ public interface ProgramAccessControlService extends OpenmrsService {
 	public Integer getCountOfPatientPrograms(String query);
 	
 	/**
-	 * Similar to {@link ProgramAccessControlService#getPatients(String, Integer, Integer)}, but
-	 * also returns the programs the patients are enrolled in. If patient is enrolled in multiple
+	 * Similar to {@link RoleAccessControlService#getPatients(String, Integer, Integer)}, but also
+	 * returns the programs the patients are enrolled in. If patient is enrolled in multiple
 	 * programs, they will also be included multiple times
 	 * 
 	 * @param query the string to search on

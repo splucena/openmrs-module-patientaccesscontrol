@@ -83,5 +83,37 @@
 				with="UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID()" />
 		</modifySql>
 	</changeSet>
+	
+	<changeSet author="Spencer" id="patientaccesscontrol-2013-11-07-12:35">
+		<createTable tableName="role_patient">
+			<column autoIncrement="true" name="role_patient_id" type="int">
+				<constraints nullable="false" primaryKey="true" />
+			</column>
+			<column name="role" type="varchar(50)">
+				<constraints nullable="false" />
+			</column>
+			<column name="patient_id" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="uuid" type="char(38)">
+				<constraints nullable="false" unique="true" />
+			</column>
+		</createTable>
+		<addForeignKeyConstraint constraintName="role_patient_patient_fk"
+			baseTableName="role_patient" baseColumnNames="patient_id"
+			referencedTableName="patient" referencedColumnNames="patient_id" />
+		<addForeignKeyConstraint constraintName="role_patient_role_fk"
+			baseTableName="role_patient" baseColumnNames="role"
+			referencedTableName="role" referencedColumnNames="role" />
+		<createIndex indexName="role_patient_role_patient_unique"
+			tableName="role_patient" unique="true">
+			<column name="role" />
+			<column name="patient_id" />
+		</createIndex>
+		<modifySql dbms="mssql">
+			<replace replace="CHAR(38)"
+				with="UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID()" />
+		</modifySql>
+	</changeSet>
     
 </databaseChangeLog>

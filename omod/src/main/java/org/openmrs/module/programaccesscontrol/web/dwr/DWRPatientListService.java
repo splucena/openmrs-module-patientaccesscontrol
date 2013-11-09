@@ -28,7 +28,8 @@ import org.openmrs.api.GlobalPropertyListener;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.programaccesscontrol.PatientProgramModel;
-import org.openmrs.module.programaccesscontrol.api.ProgramAccessControlService;
+import org.openmrs.module.programaccesscontrol.api.RoleAccessControlService;
+import org.openmrs.module.programaccesscontrol.api.RoleProgramService;
 import org.openmrs.patient.IdentifierValidator;
 import org.openmrs.patient.UnallowedIdentifierException;
 import org.openmrs.util.OpenmrsConstants;
@@ -70,7 +71,7 @@ public class DWRPatientListService implements GlobalPropertyListener {
 	 * Search on the <code>searchValue</code>. If a number is in the search string, do an identifier search. Else, do a
 	 * name search
 	 * 
-	 * @see ProgramAccessControlService#getPatients(String, int, Integer)
+	 * @see RoleProgramService#getPatients(String, int, Integer)
 	 * @param searchValue
 	 *            string to be looked for
 	 * @param includeVoided
@@ -94,7 +95,7 @@ public class DWRPatientListService implements GlobalPropertyListener {
 		// the list to return
 		List<Object> patientList = new Vector<Object>();
 
-		ProgramAccessControlService ps = Context.getService(ProgramAccessControlService.class);
+		RoleAccessControlService ps = Context.getService(RoleAccessControlService.class);
 		Collection<PatientProgramModel> patients;
 
 		try {
@@ -178,7 +179,7 @@ public class DWRPatientListService implements GlobalPropertyListener {
 		Map<String, Object> resultsMap = new HashMap<String, Object>();
 		Collection<Object> objectList = new Vector<Object>();
 		try {
-			ProgramAccessControlService ps = Context.getService(ProgramAccessControlService.class);
+			RoleAccessControlService ps = Context.getService(RoleAccessControlService.class);
 			int patientCount = 0;
 			// if this is the first call
 			if (getMatchCount) {

@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * The main controller.
  */
 @Controller
-@RequestMapping(value = "/module/" + Constants.MODULE_ID + "/program")
-public class ProgramAccessControlListController {
+@RequestMapping(value = "/module/" + Constants.MODULE_ID + "/roleProgram")
+public class RoleProgramListController {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
@@ -51,6 +51,6 @@ public class ProgramAccessControlListController {
 
 		model.addAttribute("programList", programList);
 
-		return "module/" + Constants.MODULE_ID + "/programList";
+		return "module/" + Constants.MODULE_ID + "/roleProgramList";
 	}
 }

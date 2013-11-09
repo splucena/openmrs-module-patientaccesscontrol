@@ -48,7 +48,8 @@ public class AdminList extends AdministrationSectionExt {
 	@Override
 	public Map<String, String> getLinks() {
 		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
-		map.put("/module/" + Constants.MODULE_ID + "/program.list", Constants.MODULE_ID + ".manage");
+		map.put("/module/" + Constants.MODULE_ID + "/roleProgram.list", Constants.MODULE_ID + ".roleProgram.title");
+		map.put("/module/" + Constants.MODULE_ID + "/rolePatientList.htm", Constants.MODULE_ID + ".rolePatient.title");
 		return map;
 	}
 
