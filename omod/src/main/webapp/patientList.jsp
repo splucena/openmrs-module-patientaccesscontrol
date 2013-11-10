@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Patients" otherwise="/login.htm" redirect="/module/programaccesscontrol/patient.list" />
+<openmrs:require privilege="View Patients" otherwise="/login.htm" redirect="/module/patientaccesscontrol/patient.list" />
 
 <openmrs:message var="pageTitle" code="findPatient.title" scope="page"/>
 <%@ include file="/WEB-INF/template/header.jsp" %>
@@ -9,7 +9,7 @@
 
 <br />
 
-<openmrs:portlet id="patientList" url="patientList" parameters="postURL=${pageContext.request.contextPath}/patientDashboard.form|showIncludeVoided=false|viewType=shortEdit" moduleId="programaccesscontrol" />
+<openmrs:portlet id="patientList" url="patientList" parameters="postURL=${pageContext.request.contextPath}/patientDashboard.form|showIncludeVoided=false|viewType=shortEdit" moduleId="patientaccesscontrol" />
 
 <openmrs:extensionPoint pointId="org.openmrs.findPatient" type="html" />
 

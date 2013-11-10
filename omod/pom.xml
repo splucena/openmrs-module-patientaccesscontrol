@@ -4,14 +4,14 @@
 
 	<parent>
 		<groupId>org.openmrs.module</groupId>
-		<artifactId>programaccesscontrol</artifactId>
+		<artifactId>patientaccesscontrol</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>programaccesscontrol-omod</artifactId>
+	<artifactId>patientaccesscontrol-omod</artifactId>
 	<packaging>jar</packaging>
-	<name>Program Access Control Module OMOD</name>
-	<description>OMOD project for ProgramAccessControl</description>
+	<name>Patient Access Control Module OMOD</name>
+	<description>OMOD project for PatientAccessControl</description>
 
 	<dependencies>
 

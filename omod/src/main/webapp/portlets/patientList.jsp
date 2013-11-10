@@ -2,7 +2,7 @@
 
 <c:if test="${model.authenticatedUser != null}">
 
-	<openmrs:require privilege="View Patients" otherwise="/login.htm" redirect="/module/programaccesscontrol/patient.list" />
+	<openmrs:require privilege="View Patients" otherwise="/login.htm" redirect="/module/patientaccesscontrol/patient.list" />
 	<style>
 		#openmrsSearchTable_wrapper{
 		/* Removes the empty space between the widget and the Create New Patient section if the table is short */

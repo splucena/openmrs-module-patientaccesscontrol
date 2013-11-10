@@ -7,19 +7,19 @@
 	<li
 		<c:if test='<%= request.getRequestURI().contains("/roleProgram") %>'>class="active"</c:if>>
 		<a
-		href="${pageContext.request.contextPath}/module/programaccesscontrol/roleProgram.list"><spring:message
-				code="programaccesscontrol.roleProgram.title" /></a>
+		href="${pageContext.request.contextPath}/module/patientaccesscontrol/roleProgram.list"><spring:message
+				code="patientaccesscontrol.roleProgram.title" /></a>
 	</li>
 	
 	<li
 		<c:if test='<%= request.getRequestURI().contains("/rolePatient") %>'>class="active"</c:if>>
 		<a
-		href="${pageContext.request.contextPath}/module/programaccesscontrol/rolePatientList.htm"><spring:message
-				code="programaccesscontrol.rolePatient.title" /></a>
+		href="${pageContext.request.contextPath}/module/patientaccesscontrol/rolePatientList.htm"><spring:message
+				code="patientaccesscontrol.rolePatient.title" /></a>
 	</li>
 	
 	<!-- Add further links here -->
 </ul>
 <h2>
-	<spring:message code="programaccesscontrol.title" />
+	<spring:message code="patientaccesscontrol.title" />
 </h2>

@@ -4,14 +4,14 @@
 
 	<parent>
 		<groupId>org.openmrs.module</groupId>
-		<artifactId>programaccesscontrol</artifactId>
+		<artifactId>patientaccesscontrol</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>programaccesscontrol-api</artifactId>
+	<artifactId>patientaccesscontrol-api</artifactId>
 	<packaging>jar</packaging>
-	<name>Program Access Control Module API</name>
-	<description>API project for ProgramAccessControl</description>
+	<name>Patient Access Control Module API</name>
+	<description>API project for PatientAccessControl</description>
 
 	<dependencies>
 	
