@@ -14,6 +14,7 @@
 package org.openmrs.module.patientaccesscontrol.api.db.hibernate;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,7 +24,6 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -70,14 +70,12 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 	@Override
 	public Long getCountOfPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
 	                               boolean matchIdentifierExactly, boolean searchOnNamesOrIdentifiers,
-	                               List<Program> includePrograms, boolean excludePatientNotInPrograms,
-	                               List<Integer> excludePatients) {
-		if (excludePatientNotInPrograms && includePrograms.isEmpty()) {
+	                               Collection<Integer> includePatients, Collection<Integer> excludePatients) {
+		if (includePatients != null && includePatients.isEmpty()) {
 			return 0L;
 		}
 		
-		Criteria criteria = createPatientCriteria(includePrograms, false, false, excludePatientNotInPrograms,
-		    excludePatients);
+		Criteria criteria = createPatientCriteria(includePatients, excludePatients, null, false, false);
 		
 		criteria = new PatientSearchCriteria(sessionFactory, criteria).prepareCriteria(name, identifier, identifierTypes,
 		    matchIdentifierExactly, false, searchOnNamesOrIdentifiers).setProjection(Projections.countDistinct("patientId"));
@@ -93,16 +91,15 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 	@SuppressWarnings("unchecked")
 	public List<Patient> getPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
 	                                 boolean matchIdentifierExactly, Integer start, Integer length,
-	                                 boolean searchOnNamesOrIdentifiers, List<Program> includePrograms,
-	                                 boolean excludePatientNotInPrograms, List<Integer> excludePatients) throws DAOException {
-		if (excludePatientNotInPrograms && includePrograms.isEmpty()) {
+	                                 boolean searchOnNamesOrIdentifiers, Collection<Integer> includePatients,
+	                                 Collection<Integer> excludePatients) throws DAOException {
+		if (includePatients != null && includePatients.isEmpty()) {
 			return new ArrayList<Patient>();
 		}
-		Criteria criteria = createPatientCriteria(includePrograms, false, false, excludePatientNotInPrograms,
-		    excludePatients);
+		Criteria criteria = createPatientCriteria(includePatients, excludePatients, null, false, false);
 		
 		criteria = new PatientSearchCriteria(sessionFactory, criteria).prepareCriteria(name, identifier, identifierTypes,
-		    matchIdentifierExactly, true, searchOnNamesOrIdentifiers).setFetchMode("name", FetchMode.SELECT);
+		    matchIdentifierExactly, true, searchOnNamesOrIdentifiers);
 		
 		if (start != null) {
 			criteria.setFirstResult(start);
@@ -128,13 +125,13 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 	@Override
 	public Long getCountOfPatientPrograms(String name, String identifier, List<PatientIdentifierType> identifierTypes,
 	                                      boolean matchIdentifierExactly, boolean searchOnNamesOrIdentifiers,
-	                                      List<Program> includePrograms, boolean excludePatientNotInPrograms,
-	                                      List<Integer> excludePatients) {
-		if (excludePatientNotInPrograms && includePrograms.isEmpty()) {
+	                                      Collection<Integer> includePatients, Collection<Integer> excludePatients,
+	                                      Collection<Program> includePrograms) {
+		if (includePatients != null && includePatients.isEmpty()) {
 			return 0L;
 		}
 		
-		Criteria criteria = createPatientCriteria(includePrograms, true, false, excludePatientNotInPrograms, excludePatients);
+		Criteria criteria = createPatientCriteria(includePatients, excludePatients, includePrograms, true, false);
 		
 		criteria = new PatientSearchCriteria(sessionFactory, criteria).prepareCriteria(name, identifier, identifierTypes,
 		    matchIdentifierExactly, false, searchOnNamesOrIdentifiers).setProjection(
@@ -152,14 +149,15 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 	public List<PatientProgramModel> getPatientPrograms(String name, String identifier,
 	                                                    List<PatientIdentifierType> identifierTypes,
 	                                                    boolean matchIdentifierExactly, Integer start, Integer length,
-	                                                    boolean searchOnNamesOrIdentifiers, List<Program> includePrograms,
-	                                                    boolean excludePatientNotInPrograms, List<Integer> excludePatients)
-	    throws DAOException {
+	                                                    boolean searchOnNamesOrIdentifiers,
+	                                                    Collection<Integer> includePatients,
+	                                                    Collection<Integer> excludePatients,
+	                                                    Collection<Program> includePrograms) throws DAOException {
 		
-		if (excludePatientNotInPrograms && includePrograms.isEmpty()) {
+		if (includePatients != null && includePatients.isEmpty()) {
 			return new ArrayList<PatientProgramModel>();
 		}
-		Criteria criteria = createPatientCriteria(includePrograms, true, true, excludePatientNotInPrograms, excludePatients);
+		Criteria criteria = createPatientCriteria(includePatients, excludePatients, includePrograms, true, true);
 		
 		criteria = new PatientSearchCriteria(sessionFactory, criteria).prepareCriteria(name, identifier, identifierTypes,
 		    matchIdentifierExactly, true, searchOnNamesOrIdentifiers).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
@@ -189,46 +187,43 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 		return new ArrayList<PatientProgramModel>(patientModels);
 	}
 	
-	private Criteria createPatientCriteria(List<Program> includePrograms, boolean includeProgramAlias,
-	                                       boolean orderByProgram, boolean excludePatientsNotInPrograms,
-	                                       List<Integer> excludePatients) {
+	private Criteria createPatientCriteria(Collection<Integer> includePatients, Collection<Integer> excludePatients,
+	                                       Collection<Program> includePrograms, boolean includeProgramAlias,
+	                                       boolean orderByProgram) {
 		Date now = new Date();
-		Criteria criteria = sessionFactory
-		        .getCurrentSession()
-		        .createCriteria(ModulePatient.class, "patient")
-		        .createAlias(
-		            "patientPrograms",
-		            "pp",
-		            excludePatientsNotInPrograms ? Criteria.INNER_JOIN : Criteria.LEFT_JOIN,
-		            Restrictions
-		                    .conjunction()
-		                    .add(Restrictions.eq("pp.voided", false))
-		                    .add(
-		                        Restrictions.or(Restrictions.isNull("pp.dateEnrolled"),
-		                            Restrictions.le("pp.dateEnrolled", now)))
-		                    .add(
-		                        Restrictions.or(Restrictions.isNull("pp.dateCompleted"),
-		                            Restrictions.ge("pp.dateCompleted", now))));
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ModulePatient.class, "patient");
 		if (includeProgramAlias) {
-			criteria.createAlias("pp.program", "program", Criteria.LEFT_JOIN);
+			criteria.createAlias(
+			    "patientPrograms",
+			    "pp",
+			    Criteria.LEFT_JOIN,
+			    Restrictions
+			            .conjunction()
+			            .add(Restrictions.eq("pp.voided", false))
+			            .add(
+			                Restrictions.or(Restrictions.isNull("pp.dateEnrolled"), Restrictions.le("pp.dateEnrolled", now)))
+			            .add(
+			                Restrictions.or(Restrictions.isNull("pp.dateCompleted"),
+			                    Restrictions.ge("pp.dateCompleted", now)))).createAlias("pp.program", "program",
+			    Criteria.LEFT_JOIN);
 			if (orderByProgram) {
 				criteria.addOrder(OrderNullsLast.asc("program.name"));
 			}
-		}
-		if (excludePatientsNotInPrograms) {
-			if (!includePrograms.isEmpty()) {
-				criteria.add(Restrictions.in("pp.program", includePrograms));
-			}
-		} else {
-			if (!includePrograms.isEmpty()) {
-				criteria.add(Restrictions.or(Restrictions.isNull("pp.program"),
-				    Restrictions.in("pp.program", includePrograms)));
-			} else {
-				criteria.add(Restrictions.isNull("pp.program"));
+			
+			if (includePrograms != null) {
+				if (includePrograms.isEmpty()) {
+					criteria.add(Restrictions.isNull("pp.program"));
+				} else {
+					criteria.add(Restrictions.or(Restrictions.isNull("pp.program"),
+					    Restrictions.in("pp.program", includePrograms)));
+				}
 			}
 		}
 		
-		System.out.println("excludePatients: " + excludePatients);
+		if (includePatients != null) {
+			criteria.add(Restrictions.in("patientId", includePatients));
+		}
+		
 		if (excludePatients != null && !excludePatients.isEmpty()) {
 			criteria.add(Restrictions.not(Restrictions.in("patientId", excludePatients)));
 		}

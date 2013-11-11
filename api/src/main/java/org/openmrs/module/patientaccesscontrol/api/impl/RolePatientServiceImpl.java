@@ -127,4 +127,21 @@ public class RolePatientServiceImpl extends BaseOpenmrsService implements RolePa
 			throw new APIException(e);
 		}
 	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public List<Integer> getIncludedPatients() {
+		return null;
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public List<Integer> getExplicitlyIncludedPatients() {
+		try {
+			return dao.getExplicitlyIncludedPatients(Context.getUserContext().getAllRoles());
+		}
+		catch (Exception e) {
+			throw new APIException(e);
+		}
+	}
 }

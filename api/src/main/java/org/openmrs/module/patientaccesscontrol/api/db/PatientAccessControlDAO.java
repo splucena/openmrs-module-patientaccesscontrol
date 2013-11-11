@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.patientaccesscontrol.api.db;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.openmrs.Patient;
@@ -34,8 +35,7 @@ public interface PatientAccessControlDAO {
 	 */
 	public Long getCountOfPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
 	                               boolean matchIdentifierExactly, boolean searchOnNamesOrIdentifiers,
-	                               List<Program> includePrograms, boolean excludePatientNotInPrograms,
-	                               List<Integer> excludePatients);
+	                               Collection<Integer> includePatients, Collection<Integer> excludePatients);
 	
 	/**
 	 * @param searchOnNamesOrIdentifiers specifies if the logic should find patients that match the
@@ -50,8 +50,8 @@ public interface PatientAccessControlDAO {
 	 */
 	public List<Patient> getPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
 	                                 boolean matchIdentifierExactly, Integer start, Integer length,
-	                                 boolean searchOnNamesOrIdentifiers, List<Program> includePrograms,
-	                                 boolean excludePatientNotInPrograms, List<Integer> excludePatients) throws DAOException;
+	                                 boolean searchOnNamesOrIdentifiers, Collection<Integer> includePatients,
+	                                 Collection<Integer> excludePatients) throws DAOException;
 	
 	/**
 	 * @see org.openmrs.module.patientaccesscontrol.api.PatientAccessControlService#getPatientPrograms(String,
@@ -60,9 +60,10 @@ public interface PatientAccessControlDAO {
 	public List<PatientProgramModel> getPatientPrograms(String name, String identifier,
 	                                                    List<PatientIdentifierType> identifierTypes,
 	                                                    boolean matchIdentifierExactly, Integer start, Integer length,
-	                                                    boolean searchOnNamesOrIdentifiers, List<Program> includePrograms,
-	                                                    boolean excludePatientNotInPrograms, List<Integer> excludePatients)
-	    throws DAOException;
+	                                                    boolean searchOnNamesOrIdentifiers,
+	                                                    Collection<Integer> includePatients,
+	                                                    Collection<Integer> excludePatients,
+	                                                    Collection<Program> includePrograms) throws DAOException;
 	
 	/**
 	 * @see org.openmrs.module.patientaccesscontrol.api.PatientAccessControlService#getCountOfPatientPrograms(String,
@@ -70,7 +71,7 @@ public interface PatientAccessControlDAO {
 	 */
 	public Long getCountOfPatientPrograms(String name, String identifier, List<PatientIdentifierType> identifierTypes,
 	                                      boolean matchIdentifierExactly, boolean searchOnNamesOrIdentifiers,
-	                                      List<Program> includePrograms, boolean excludePatientNotInPrograms,
-	                                      List<Integer> excludePatients);
+	                                      Collection<Integer> includePatients, Collection<Integer> excludePatients,
+	                                      Collection<Program> includePrograms);
 	
 }

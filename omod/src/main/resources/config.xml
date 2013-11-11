@@ -92,6 +92,15 @@
 	<mappingFiles>				
 		PatientAccessControl.hbm.xml				
 	</mappingFiles>
+	
+	<!-- Required Global Properties --> 
+	<globalProperty>
+		<property>patientaccesscontrol.checkAllAccessControls</property>
+		<defaultValue>true</defaultValue>
+		<description>
+			If true, user must have access to both patient and program. Otherwise, satisfying any one access control will grant user access. 
+		</description>
+	</globalProperty>
 
 	<!-- Internationalization -->
 	<!-- All message codes should start with ${project.parent.artifactId}. -->

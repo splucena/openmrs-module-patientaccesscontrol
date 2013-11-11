@@ -2,6 +2,8 @@ package org.openmrs.module.patientaccesscontrol.api;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Arrays;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,7 +13,6 @@ import org.openmrs.Role;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientaccesscontrol.Constants;
 import org.openmrs.module.patientaccesscontrol.RolePatient;
-import org.openmrs.module.patientaccesscontrol.api.RolePatientService;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 
 public class RolePatientServiceTest extends BaseModuleContextSensitiveTest {
@@ -235,5 +236,45 @@ public class RolePatientServiceTest extends BaseModuleContextSensitiveTest {
 		Assert.assertEquals(getRolePatientService().getExcludedPatients().size(), 0);
 		Context.removeProxyPrivilege("View Patients");
 		Context.logout();
+	}
+	
+	/**
+	 * @see RolePatientService#getExcludedPatients()
+	 * @verifies return list of patients the authenticated user do not have access to
+	 */
+	@Test
+	public void getExcludedPatients_shouldReturnListOfPatientsTheAuthenticatedUserDoNotHaveAccessTo() throws Exception {
+		Context.logout();
+		Context.authenticate("thirdaccount", "test");
+		Context.addProxyPrivilege("View Patients");
+		Assert.assertEquals(getRolePatientService().getExcludedPatients(), Arrays.asList(6, 8));
+		Context.removeProxyPrivilege("View Patients");
+		
+		Context.logout();
+		Context.authenticate("secondaccount", "test");
+		Context.addProxyPrivilege("View Patients");
+		Assert.assertEquals(getRolePatientService().getExcludedPatients(), Arrays.asList(6));
+		Context.removeProxyPrivilege("View Patients");
+		
+		Context.logout();
+		Context.authenticate("firstaccount", "test");
+		Context.addProxyPrivilege("View Patients");
+		Assert.assertTrue(getRolePatientService().getExcludedPatients().isEmpty());
+		Context.removeProxyPrivilege("View Patients");
+		
+		Context.logout();
+	}
+	
+	/**
+	 * @see RolePatientService#getIncludedPatients()
+	 * @verifies return null if user has access to all patients
+	 */
+	@Test
+	public void getIncludedPatients_shouldReturnNullIfUserHasAccessToAllPatients() throws Exception {
+		Context.logout();
+		Context.authenticate("thirdaccount", "test");
+		Context.addProxyPrivilege("View Patients");
+		Assert.assertNull(getRolePatientService().getIncludedPatients());
+		Context.removeProxyPrivilege("View Patients");
 	}
 }

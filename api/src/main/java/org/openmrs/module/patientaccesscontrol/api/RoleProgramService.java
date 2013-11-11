@@ -20,7 +20,6 @@ import org.openmrs.Program;
 import org.openmrs.Role;
 import org.openmrs.annotation.Authorized;
 import org.openmrs.api.APIException;
-import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.patientaccesscontrol.Constants;
 import org.openmrs.module.patientaccesscontrol.RoleProgram;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @see org.openmrs.api.context.Context
  */
 @Transactional
-public interface RoleProgramService extends OpenmrsService {
+public interface RoleProgramService extends AccessControlService {
 	
 	/**
 	 * Get the roles for program that has view access to
@@ -127,8 +126,44 @@ public interface RoleProgramService extends OpenmrsService {
 	 * @should not authorize if anonymous user does not have view privilege for the specified
 	 *         patient
 	 */
+	@Override
 	@Transactional(readOnly = true)
 	public boolean hasPrivilege(Patient patient);
+	
+	/**
+	 * Return a list of patients the authenticated user have access to
+	 * 
+	 * @return list of patients the authenticated user have access to. null if all patients are
+	 *         included.
+	 * @throws APIException
+	 * @should return list of patients the authenticated user have access to
+	 * @should return null if user has access to all patients
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public List<Integer> getIncludedPatients();
+	
+	/**
+	 * Return a list of patients the authenticated user do not have access to
+	 * 
+	 * @return list of patients the authenticated user do not have access to
+	 * @throws APIException
+	 * @should return list of patients the authenticated user do not have access to
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public List<Integer> getExcludedPatients();
+	
+	/**
+	 * Return a list of patients the authenticated user have explicit access to
+	 * 
+	 * @return list of patients the authenticated user have explicit access to
+	 * @throws APIException
+	 * @should return list of patients the authenticated user have explicit access to
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public List<Integer> getExplicitlyIncludedPatients();
 	
 	/**
 	 * Get the programs the currently authenticated user has view privilege to
@@ -139,13 +174,4 @@ public interface RoleProgramService extends OpenmrsService {
 	 */
 	@Transactional(readOnly = true)
 	public List<Program> getPrograms();
-	
-	/**
-	 * checks if authenticated user can view patients that are not in any programs
-	 * 
-	 * @return true if authenticated user can view patients that are not in any programs
-	 * @throws APIException
-	 * @should return true if authenticated user can view patients that are not in any programs
-	 */
-	public boolean canViewPatientsNotInPrograms();
 }

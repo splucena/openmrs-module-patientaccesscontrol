@@ -13,19 +13,30 @@
  */
 package org.openmrs.module.patientaccesscontrol.api.db.hibernate;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Subqueries;
+import org.openmrs.Patient;
+import org.openmrs.PatientIdentifierType;
+import org.openmrs.PatientProgram;
 import org.openmrs.Program;
 import org.openmrs.Role;
 import org.openmrs.api.db.DAOException;
+import org.openmrs.api.db.hibernate.PatientSearchCriteria;
 import org.openmrs.module.patientaccesscontrol.RoleProgram;
+import org.openmrs.module.patientaccesscontrol.api.db.PatientAccessControlDAO;
 import org.openmrs.module.patientaccesscontrol.api.db.RoleProgramDAO;
 
 /**
@@ -176,4 +187,58 @@ public class HibernateRoleProgramDAO implements RoleProgramDAO {
 		        .setParameter("role", role).executeUpdate();
 	}
 	
+	/**
+	 * @see PatientAccessControlDAO#getPatients(String, String, List, boolean, Integer, Integer,
+	 *      boolean)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<Integer> getIncludedPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
+	                                         boolean matchIdentifierExactly, boolean searchOnNamesOrIdentifiers,
+	                                         List<Program> includePrograms) throws DAOException {
+		if (includePrograms.isEmpty()) {
+			return new ArrayList<Integer>();
+		}
+		Criteria criteria = createPatientCriteria(includePrograms);
+		
+		criteria = new PatientSearchCriteria(sessionFactory, criteria).prepareCriteria(name, identifier, identifierTypes,
+		    matchIdentifierExactly, false, searchOnNamesOrIdentifiers).setProjection(
+		    Projections.distinct(Projections.property("patientId")));
+		
+		return criteria.list();
+	}
+	
+	private Criteria createPatientCriteria(List<Program> includePrograms) {
+		Date now = new Date();
+		Criteria criteria = sessionFactory
+		        .getCurrentSession()
+		        .createCriteria(Patient.class, "patient")
+		        .createAlias(
+		            "patientPrograms",
+		            "pp",
+		            Criteria.INNER_JOIN,
+		            Restrictions
+		                    .conjunction()
+		                    .add(Restrictions.eq("pp.voided", false))
+		                    .add(
+		                        Restrictions.or(Restrictions.isNull("pp.dateEnrolled"),
+		                            Restrictions.le("pp.dateEnrolled", now)))
+		                    .add(
+		                        Restrictions.or(Restrictions.isNull("pp.dateCompleted"),
+		                            Restrictions.ge("pp.dateCompleted", now))));
+		criteria.add(Restrictions.in("pp.program", includePrograms));
+		return criteria;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Integer> getExcludedPatients(Collection<Program> programs) {
+		DetachedCriteria subquery = DetachedCriteria.forClass(PatientProgram.class)
+		        .add(Restrictions.in("program", programs))
+		        .setProjection(Projections.distinct(Projections.property("patient")));
+		
+		return sessionFactory.getCurrentSession().createCriteria(PatientProgram.class)
+		        .add(Subqueries.propertyNotIn("patient", subquery)).createAlias("patient", "p")
+		        .setProjection(Projections.distinct(Projections.property("p.patientId"))).list();
+	}
 }

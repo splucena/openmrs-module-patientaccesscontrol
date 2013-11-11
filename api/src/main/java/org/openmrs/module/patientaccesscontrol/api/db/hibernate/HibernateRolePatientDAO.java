@@ -146,4 +146,16 @@ public class HibernateRolePatientDAO implements RolePatientDAO {
 		        .add(Subqueries.propertyNotIn("patient", subquery)).createAlias("patient", "p")
 		        .setProjection(Projections.distinct(Projections.property("p.patientId"))).list();
 	}
+	
+	/**
+	 * @see 
+	 *      org.openmrs.module.patientaccesscontrol.api.RolePatientService#getExcludedPatients(Set<Role
+	 *      >)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Integer> getExplicitlyIncludedPatients(Set<Role> roles) {
+		return sessionFactory.getCurrentSession().createCriteria(RolePatient.class).add(Restrictions.in("role", roles))
+		        .createAlias("patient", "p").setProjection(Projections.distinct(Projections.property("p.patientId"))).list();
+	}
 }

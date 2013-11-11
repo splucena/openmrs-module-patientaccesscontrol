@@ -93,4 +93,9 @@ public interface RolePatientDAO {
 	 */
 	public List<Integer> getExcludedPatients(Set<Role> roles);
 	
+	/**
+	 * @see org.openmrs.module.patientaccesscontrol.api.RolePatientService#getExplicitlyIncludedPatients()
+	 */
+	public List<Integer> getExplicitlyIncludedPatients(Set<Role> roles);
+	
 }

@@ -13,8 +13,12 @@
  */
 package org.openmrs.module.patientaccesscontrol.api.impl;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +30,9 @@ import org.openmrs.Program;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
+import org.openmrs.module.patientaccesscontrol.Constants;
 import org.openmrs.module.patientaccesscontrol.PatientProgramModel;
+import org.openmrs.module.patientaccesscontrol.api.AccessControlService;
 import org.openmrs.module.patientaccesscontrol.api.PatientAccessControlService;
 import org.openmrs.module.patientaccesscontrol.api.RolePatientService;
 import org.openmrs.module.patientaccesscontrol.api.RoleProgramService;
@@ -40,6 +46,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class PatientAccessControlServiceImpl extends BaseOpenmrsService implements PatientAccessControlService {
 	
 	protected final Log log = LogFactory.getLog(this.getClass());
+	
+	@SuppressWarnings("unchecked")
+	private static List<Class<? extends AccessControlService>> accessControlServices = Arrays.asList(
+	    RoleProgramService.class, RolePatientService.class);
 	
 	private PatientAccessControlDAO dao;
 	
@@ -57,23 +67,83 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 		return dao;
 	}
 	
-	@Override
-	@Transactional(readOnly = true)
-	public boolean hasPrivilege(Patient patient) {
-		return Context.getService(RoleProgramService.class).hasPrivilege(patient)
-		        && Context.getService(RolePatientService.class).hasPrivilege(patient);
+	private boolean checkAllAccessControls() {
+		return Context.getAdministrationService().getGlobalPropertyValue(Constants.PROP_CHECK_ALL_ACCESS_CONTROLS, true);
 	}
 	
-	public List<Program> getPrograms() {
+	private List<Program> getIncludePrograms() {
 		return Context.getService(RoleProgramService.class).getPrograms();
 	}
 	
-	public List<Integer> getExcludePatients() {
-		return Context.getService(RolePatientService.class).getExcludedPatients();
+	@Override
+	@Transactional(readOnly = true)
+	public boolean hasPrivilege(Patient patient) {
+		boolean checkAllAccessControls = checkAllAccessControls();
+		for (Class<? extends AccessControlService> service : accessControlServices) {
+			AccessControlService svc = Context.getService(service);
+			if (svc.hasPrivilege(patient)) {
+				if (!checkAllAccessControls) {
+					return true;
+				}
+			} else {
+				if (checkAllAccessControls) {
+					return false;
+				}
+			}
+		}
+		return checkAllAccessControls;
 	}
 	
-	private boolean canViewPatientsNotInPrograms() {
-		return Context.getService(RoleProgramService.class).canViewPatientsNotInPrograms();
+	private PatientAccess getPatientAccess() {
+		Set<Integer> includePatients = new HashSet<Integer>();
+		Set<Integer> excludePatients = new HashSet<Integer>();
+		Set<Integer> explicitlyIncludedPatients = new HashSet<Integer>();
+		boolean hasInclude = false;
+		for (Class<? extends AccessControlService> service : accessControlServices) {
+			AccessControlService svc = Context.getService(service);
+			List<Integer> ip = svc.getIncludedPatients();
+			List<Integer> ep = svc.getExcludedPatients();
+			System.out.println(service + " :: " + ip + " :: " + ep);
+			if (ip != null) {
+				hasInclude = true;
+				includePatients.addAll(ip);
+			}
+			excludePatients.addAll(ep);
+			if (!checkAllAccessControls()) {
+				explicitlyIncludedPatients.addAll(svc.getExplicitlyIncludedPatients());
+			}
+		}
+		if (!hasInclude) {
+			includePatients = null;
+			if (!checkAllAccessControls()) {
+				excludePatients.removeAll(explicitlyIncludedPatients);
+			}
+		} else if (!checkAllAccessControls()) {
+			includePatients.addAll(explicitlyIncludedPatients);
+			excludePatients.removeAll(includePatients);
+		}
+		System.out.println(includePatients + " :: " + excludePatients);
+		return new PatientAccess(includePatients, excludePatients);
+	}
+	
+	private static class PatientAccess {
+		
+		private final Collection<Integer> includedPatients;
+		
+		private final Collection<Integer> excludedPatients;
+		
+		public PatientAccess(Collection<Integer> includedPatients, Collection<Integer> excludedPatients) {
+			this.includedPatients = includedPatients;
+			this.excludedPatients = excludedPatients;
+		}
+		
+		public Collection<Integer> getIncludedPatients() {
+			return includedPatients;
+		}
+		
+		public Collection<Integer> getExcludedPatients() {
+			return excludedPatients;
+		}
 	}
 	
 	/**
@@ -82,14 +152,14 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	@Override
 	public Integer getCountOfPatients(String query) {
 		List<PatientIdentifierType> emptyList = new Vector<PatientIdentifierType>();
-		boolean excludePatientNotInPrograms = !canViewPatientsNotInPrograms();
+		PatientAccess patientAccess = getPatientAccess();
+		boolean searchOnNamesOrIdentifiers = true;
 		if (StringUtils.isEmpty(query)) {
-			return OpenmrsUtil.convertToInteger(dao.getCountOfPatients(null, null, emptyList, false, false, getPrograms(),
-			    excludePatientNotInPrograms, getExcludePatients()));
-		} else {
-			return OpenmrsUtil.convertToInteger(dao.getCountOfPatients(null, query, emptyList, false, true, getPrograms(),
-			    excludePatientNotInPrograms, getExcludePatients()));
+			query = null;
+			searchOnNamesOrIdentifiers = false;
 		}
+		return OpenmrsUtil.convertToInteger(dao.getCountOfPatients(null, query, emptyList, false,
+		    searchOnNamesOrIdentifiers, patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients()));
 	}
 	
 	/**
@@ -98,14 +168,14 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Patient> getPatients(String query, Integer start, Integer length) throws APIException {
-		boolean excludePatientNotInPrograms = !canViewPatientsNotInPrograms();
+		PatientAccess patientAccess = getPatientAccess();
+		boolean searchOnNamesOrIdentifiers = true;
 		if (StringUtils.isEmpty(query)) {
-			return dao.getPatients(null, null, Collections.EMPTY_LIST, false, start, length, false, getPrograms(),
-			    excludePatientNotInPrograms, getExcludePatients());
-		} else {
-			return dao.getPatients(query, null, Collections.EMPTY_LIST, false, start, length, true, getPrograms(),
-			    excludePatientNotInPrograms, getExcludePatients());
+			query = null;
+			searchOnNamesOrIdentifiers = false;
 		}
+		return dao.getPatients(query, null, Collections.EMPTY_LIST, false, start, length, searchOnNamesOrIdentifiers,
+		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients());
 	}
 	
 	/**
@@ -114,14 +184,14 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<PatientProgramModel> getPatientPrograms(String query, Integer start, Integer length) throws APIException {
-		boolean excludePatientNotInPrograms = !canViewPatientsNotInPrograms();
+		PatientAccess patientAccess = getPatientAccess();
+		boolean searchOnNamesOrIdentifiers = true;
 		if (StringUtils.isEmpty(query)) {
-			return dao.getPatientPrograms(null, null, Collections.EMPTY_LIST, false, start, length, false, getPrograms(),
-			    excludePatientNotInPrograms, getExcludePatients());
-		} else {
-			return dao.getPatientPrograms(query, null, Collections.EMPTY_LIST, false, start, length, true, getPrograms(),
-			    excludePatientNotInPrograms, getExcludePatients());
+			query = null;
+			searchOnNamesOrIdentifiers = false;
 		}
+		return dao.getPatientPrograms(query, null, Collections.EMPTY_LIST, false, start, length, searchOnNamesOrIdentifiers,
+		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients(), getIncludePrograms());
 	}
 	
 	/**
@@ -130,21 +200,24 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	@Override
 	public Integer getCountOfPatientPrograms(String query) {
 		List<PatientIdentifierType> emptyList = new Vector<PatientIdentifierType>();
-		boolean excludePatientNotInPrograms = !canViewPatientsNotInPrograms();
+		PatientAccess patientAccess = getPatientAccess();
+		boolean searchOnNamesOrIdentifiers = true;
 		if (StringUtils.isEmpty(query)) {
-			return OpenmrsUtil.convertToInteger(dao.getCountOfPatientPrograms(null, null, emptyList, false, false,
-			    getPrograms(), excludePatientNotInPrograms, getExcludePatients()));
-		} else {
-			return OpenmrsUtil.convertToInteger(dao.getCountOfPatientPrograms(null, query, emptyList, false, true,
-			    getPrograms(), excludePatientNotInPrograms, getExcludePatients()));
+			query = null;
+			searchOnNamesOrIdentifiers = false;
 		}
+		return OpenmrsUtil.convertToInteger(dao.getCountOfPatientPrograms(null, query, emptyList, false,
+		    searchOnNamesOrIdentifiers, patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients(),
+		    getIncludePrograms()));
+		
 	}
 	
 	@Override
 	public List<Patient> getPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
 	                                 boolean matchIdentifierExactly, Integer start, Integer length) throws APIException {
+		PatientAccess patientAccess = getPatientAccess();
 		return dao.getPatients(name, identifier, identifierTypes, matchIdentifierExactly, start, length, true,
-		    getPrograms(), !canViewPatientsNotInPrograms(), getExcludePatients());
+		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients());
 	}
 	
 }

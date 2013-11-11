@@ -16,11 +16,8 @@ package org.openmrs.module.patientaccesscontrol.api;
 import java.util.List;
 
 import org.openmrs.Patient;
-import org.openmrs.Role;
-import org.openmrs.annotation.Authorized;
 import org.openmrs.api.APIException;
-import org.openmrs.module.patientaccesscontrol.Constants;
-import org.openmrs.module.patientaccesscontrol.RolePatient;
+import org.openmrs.api.OpenmrsService;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -35,81 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @see org.openmrs.api.context.Context
  */
 @Transactional
-public interface RolePatientService extends AccessControlService {
-	
-	/**
-	 * Get the roles for patient that has view access to
-	 * 
-	 * @param patient the patient to get
-	 * @return the list of roles with view access for the given patient
-	 * @throws APIException
-	 * @should return all roles with view for the given Patient
-	 */
-	@Transactional(readOnly = true)
-	@Authorized(Constants.PRIV_VIEW_ROLE_PATIENT)
-	public List<Role> getRoles(Patient patient);
-	
-	/**
-	 * Create or update the given Role Patient in the database
-	 * 
-	 * @param rolePatient the RolePatient to save
-	 * @return the RolePatient that was saved
-	 * @throws APIException
-	 * @should save given rolePatient successfully
-	 */
-	@Transactional
-	@Authorized(Constants.PRIV_MANAGE_ROLE_PATIENT)
-	public void saveRolePatient(RolePatient rolePatient);
-	
-	/**
-	 * Get role patient by patient and role
-	 * 
-	 * @param role the role to get
-	 * @param patient the patient to get
-	 * @return the role patient with the patient and role given
-	 * @throws APIException
-	 * @should return the role patient with the patient and role given
-	 */
-	@Transactional(readOnly = true)
-	@Authorized(Constants.PRIV_VIEW_ROLE_PATIENT)
-	public RolePatient getRolePatient(Role role, Patient patient);
-	
-	/**
-	 * Completely removes Role Programs with the given Role and Patient from the database. This is
-	 * not reversible.
-	 * 
-	 * @param role
-	 * @param patient
-	 * @throws APIException
-	 * @should delete role patient for role and patient successfully
-	 */
-	@Transactional
-	@Authorized(Constants.PRIV_MANAGE_ROLE_PATIENT)
-	public void deleteRolePatient(Role role, Patient patient);
-	
-	/**
-	 * Completely removes Role Programs with the given Role from the database. This is not
-	 * reversible.
-	 * 
-	 * @param role
-	 * @throws APIException
-	 * @should delete role patients for role successfully
-	 */
-	@Transactional
-	@Authorized(Constants.PRIV_MANAGE_ROLE_PATIENT)
-	public void deleteRolePatients(Role role);
-	
-	/**
-	 * Completely removes Role Programs with the given Patient from the database. This is not
-	 * reversible.
-	 * 
-	 * @param patient
-	 * @throws APIException
-	 * @should delete role patients for patient successfully
-	 */
-	@Transactional
-	@Authorized(Constants.PRIV_MANAGE_ROLE_PATIENT)
-	public void deleteRolePatients(Patient patient);
+public interface AccessControlService extends OpenmrsService {
 	
 	/**
 	 * Checks whether or not currently authenticated user has view privilege for the given patient
@@ -124,7 +47,6 @@ public interface RolePatientService extends AccessControlService {
 	 * @should not authorize if anonymous user does not have view privilege for the specified
 	 *         patient
 	 */
-	@Override
 	@Transactional(readOnly = true)
 	public boolean hasPrivilege(Patient patient);
 	
@@ -135,7 +57,6 @@ public interface RolePatientService extends AccessControlService {
 	 * @throws APIException
 	 * @should return list of patients the authenticated user do not have access to
 	 */
-	@Override
 	@Transactional(readOnly = true)
 	public List<Integer> getExcludedPatients();
 	
@@ -148,7 +69,6 @@ public interface RolePatientService extends AccessControlService {
 	 * @should return list of patients the authenticated user have access to
 	 * @should return null if user has access to all patients
 	 */
-	@Override
 	@Transactional(readOnly = true)
 	public List<Integer> getIncludedPatients();
 	
@@ -159,7 +79,6 @@ public interface RolePatientService extends AccessControlService {
 	 * @throws APIException
 	 * @should return list of patients the authenticated user have explicit access to
 	 */
-	@Override
 	@Transactional(readOnly = true)
 	public List<Integer> getExplicitlyIncludedPatients();
 }

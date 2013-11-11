@@ -2,6 +2,8 @@ package org.openmrs.module.patientaccesscontrol.api;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Arrays;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,7 +14,6 @@ import org.openmrs.Role;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientaccesscontrol.Constants;
 import org.openmrs.module.patientaccesscontrol.RoleProgram;
-import org.openmrs.module.patientaccesscontrol.api.RoleProgramService;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 
 public class RoleProgramServiceTest extends BaseModuleContextSensitiveTest {
@@ -65,10 +66,8 @@ public class RoleProgramServiceTest extends BaseModuleContextSensitiveTest {
 	public void deleteRolePrograms_shouldDeleteRoleProgramsForRoleSuccessfully() throws Exception {
 		Role role = Context.getUserService().getRole("Some Role");
 		getRoleProgramService().deleteRolePrograms(role);
-		Assert.assertNull(getRoleProgramService().getRoleProgram(role,
-		    Context.getProgramWorkflowService().getProgram(1)));
-		Assert.assertNull(getRoleProgramService().getRoleProgram(role,
-		    Context.getProgramWorkflowService().getProgram(2)));
+		Assert.assertNull(getRoleProgramService().getRoleProgram(role, Context.getProgramWorkflowService().getProgram(1)));
+		Assert.assertNull(getRoleProgramService().getRoleProgram(role, Context.getProgramWorkflowService().getProgram(2)));
 	}
 	
 	/**
@@ -99,10 +98,8 @@ public class RoleProgramServiceTest extends BaseModuleContextSensitiveTest {
 	 */
 	@Test
 	public void getRoles_shouldReturnAllRoleProgramsWithTheGivenProgram() throws Exception {
-		Assert.assertEquals(2, getRoleProgramService().getRoles(Context.getProgramWorkflowService().getProgram(1))
-		        .size());
-		Assert.assertEquals(4, getRoleProgramService().getRoles(Context.getProgramWorkflowService().getProgram(2))
-		        .size());
+		Assert.assertEquals(2, getRoleProgramService().getRoles(Context.getProgramWorkflowService().getProgram(1)).size());
+		Assert.assertEquals(4, getRoleProgramService().getRoles(Context.getProgramWorkflowService().getProgram(2)).size());
 	}
 	
 	/**
@@ -229,5 +226,72 @@ public class RoleProgramServiceTest extends BaseModuleContextSensitiveTest {
 		
 		Assert.assertNotNull(fac.getUuid());
 		Assert.assertNotNull(getRoleProgramService().getRoleProgram(role, program));
+	}
+	
+	/**
+	 * @see RoleProgramService#getIncludedPatients()
+	 * @verifies return list of patients the authenticated user have access to
+	 */
+	@Test
+	public void getIncludedPatients_shouldReturnListOfPatientsTheAuthenticatedUserHaveAccessTo() throws Exception {
+		Context.logout();
+		Context.authenticate("thirdaccount", "test");
+		Context.addProxyPrivilege("View Patients");
+		Context.addProxyPrivilege("View Patient Programs");
+		Assert.assertEquals(getRoleProgramService().getIncludedPatients(), Arrays.asList(2, 7));
+		Context.removeProxyPrivilege("View Patients");
+		Context.removeProxyPrivilege("View Patient Programs");
+		
+		Context.logout();
+		Context.authenticate("secondaccount", "test");
+		Context.addProxyPrivilege("View Patients");
+		Context.addProxyPrivilege("View Patient Programs");
+		Assert.assertEquals(getRoleProgramService().getIncludedPatients(), Arrays.asList(2, 6, 7));
+		Context.removeProxyPrivilege("View Patients");
+		Context.removeProxyPrivilege("View Patient Programs");
+		
+		Context.logout();
+	}
+	
+	/**
+	 * @see RoleProgramService#getIncludedPatients()
+	 * @verifies return null if user has access to all patients
+	 */
+	@Test
+	public void getIncludedPatients_shouldReturnNullIfUserHasAccessToAllPatients() throws Exception {
+		Context.logout();
+		Context.authenticate("firstaccount", "test");
+		Assert.assertNull(getRoleProgramService().getIncludedPatients());
+		Context.logout();
+	}
+	
+	/**
+	 * @see RoleProgramService#getExcludedPatients()
+	 * @verifies return list of patients the authenticated user do not have access to
+	 */
+	@Test
+	public void getExcludedPatients_shouldReturnListOfPatientsTheAuthenticatedUserDoNotHaveAccessTo() throws Exception {
+		getRoleProgramService().deleteRoleProgram(Context.getUserService().getRole("Some Role"),
+		    Context.getProgramWorkflowService().getProgram(1));
+		getRoleProgramService().deleteRoleProgram(Context.getUserService().getRole("Parent"),
+		    Context.getProgramWorkflowService().getProgram(1));
+		
+		Context.logout();
+		Context.authenticate("thirdaccount", "test");
+		Context.addProxyPrivilege("View Patients");
+		Context.addProxyPrivilege("View Patient Programs");
+		Assert.assertEquals(getRoleProgramService().getExcludedPatients().size(), 0);
+		Context.removeProxyPrivilege("View Patients");
+		Context.removeProxyPrivilege("View Patient Programs");
+		
+		Context.logout();
+		Context.authenticate("firstaccount", "test");
+		Context.addProxyPrivilege("View Patients");
+		Context.addProxyPrivilege("View Patient Programs");
+		Assert.assertEquals(getRoleProgramService().getExcludedPatients().size(), 2);
+		Context.removeProxyPrivilege("View Patients");
+		Context.removeProxyPrivilege("View Patient Programs");
+		
+		Context.logout();
 	}
 }

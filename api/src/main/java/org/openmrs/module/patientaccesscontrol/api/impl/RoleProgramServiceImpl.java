@@ -13,6 +13,8 @@
  */
 package org.openmrs.module.patientaccesscontrol.api.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -155,8 +157,7 @@ public class RoleProgramServiceImpl extends BaseOpenmrsService implements RolePr
 		}
 	}
 	
-	@Override
-	public boolean canViewPatientsNotInPrograms() {
+	private boolean canViewPatientsNotInPrograms() {
 		try {
 			Set<Role> roles = Context.getUserContext().getAllRoles();
 			for (Role role : roles) {
@@ -170,6 +171,45 @@ public class RoleProgramServiceImpl extends BaseOpenmrsService implements RolePr
 		catch (Exception e) {
 			throw new APIException(e);
 		}
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public List<Integer> getExcludedPatients() {
+		if (!canViewPatientsNotInPrograms()) {
+			return new ArrayList<Integer>();
+		}
+		
+		try {
+			Set<Role> roles = Context.getUserContext().getAllRoles();
+			for (Role role : roles) {
+				if (role.getRole().equals(RoleConstants.SUPERUSER)) {
+					return new ArrayList<Integer>();
+				}
+			}
+			
+			return dao.getExcludedPatients(getPrograms());
+		}
+		catch (Exception e) {
+			throw new APIException(e);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
+	public List<Integer> getIncludedPatients() {
+		if (canViewPatientsNotInPrograms()) {
+			return null;
+		}
+		return dao.getIncludedPatients(null, null, Collections.EMPTY_LIST, false, false, getPrograms());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
+	public List<Integer> getExplicitlyIncludedPatients() {
+		return dao.getIncludedPatients(null, null, Collections.EMPTY_LIST, false, false, getPrograms());
 	}
 	
 }
