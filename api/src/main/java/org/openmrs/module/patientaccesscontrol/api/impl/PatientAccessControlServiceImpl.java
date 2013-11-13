@@ -103,7 +103,6 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 			AccessControlService svc = Context.getService(service);
 			List<Integer> ip = svc.getIncludedPatients();
 			List<Integer> ep = svc.getExcludedPatients();
-			System.out.println(service + " :: " + ip + " :: " + ep);
 			if (ip != null) {
 				hasInclude = true;
 				includePatients.addAll(ip);
@@ -122,7 +121,6 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 			includePatients.addAll(explicitlyIncludedPatients);
 			excludePatients.removeAll(includePatients);
 		}
-		System.out.println(includePatients + " :: " + excludePatients);
 		return new PatientAccess(includePatients, excludePatients);
 	}
 	
