@@ -31,7 +31,23 @@
 		
 		<many-to-one name="role" class="org.openmrs.Role" not-null="true" column="role" />
 		
-		<many-to-one name="patient" class="org.openmrs.Patient" not-null="false" column="patient_id" />
+		<many-to-one name="patient" class="org.openmrs.Patient" not-null="true" column="patient_id" />
+				
+		<property name="uuid" not-null="true" type="java.lang.String" column="uuid" />
+		
+	</class>
+	
+	<class name="UserPatient" table="patientaccesscontrol_user_patient">
+	
+		<cache usage="read-write"/>
+
+		<id name="id" type="int" column="user_patient_id" unsaved-value="0">
+			<generator class="native" />
+		</id>
+		
+		<many-to-one name="user" class="org.openmrs.User" not-null="true" column="user_id" />
+		
+		<many-to-one name="patient" class="org.openmrs.Patient" not-null="true" column="patient_id" />
 				
 		<property name="uuid" not-null="true" type="java.lang.String" column="uuid" />
 		

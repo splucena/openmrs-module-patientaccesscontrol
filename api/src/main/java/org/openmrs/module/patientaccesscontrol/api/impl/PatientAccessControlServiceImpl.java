@@ -36,6 +36,7 @@ import org.openmrs.module.patientaccesscontrol.api.AccessControlService;
 import org.openmrs.module.patientaccesscontrol.api.PatientAccessControlService;
 import org.openmrs.module.patientaccesscontrol.api.RolePatientService;
 import org.openmrs.module.patientaccesscontrol.api.RoleProgramService;
+import org.openmrs.module.patientaccesscontrol.api.UserPatientService;
 import org.openmrs.module.patientaccesscontrol.api.db.PatientAccessControlDAO;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,6 +79,10 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	@Override
 	@Transactional(readOnly = true)
 	public boolean hasPrivilege(Patient patient) {
+		if (Context.getService(UserPatientService.class).hasPrivilege(patient)) {
+			return true;
+		}
+		
 		boolean checkAllAccessControls = checkAllAccessControls();
 		for (Class<? extends AccessControlService> service : accessControlServices) {
 			AccessControlService svc = Context.getService(service);
@@ -99,6 +104,7 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 		Set<Integer> excludePatients = new HashSet<Integer>();
 		Set<Integer> explicitlyIncludedPatients = new HashSet<Integer>();
 		boolean hasInclude = false;
+		boolean checkAllAccessControls = checkAllAccessControls();
 		for (Class<? extends AccessControlService> service : accessControlServices) {
 			AccessControlService svc = Context.getService(service);
 			List<Integer> ip = svc.getIncludedPatients();
@@ -112,15 +118,20 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 				explicitlyIncludedPatients.addAll(svc.getExplicitlyIncludedPatients());
 			}
 		}
+		List<Integer> mustInclude = Context.getService(UserPatientService.class).getIncludedPatients();
 		if (!hasInclude) {
 			includePatients = null;
-			if (!checkAllAccessControls()) {
+			if (!checkAllAccessControls) {
 				excludePatients.removeAll(explicitlyIncludedPatients);
 			}
-		} else if (!checkAllAccessControls()) {
-			includePatients.addAll(explicitlyIncludedPatients);
-			excludePatients.removeAll(includePatients);
+		} else {
+			if (!checkAllAccessControls) {
+				includePatients.addAll(explicitlyIncludedPatients);
+				excludePatients.removeAll(includePatients);
+			}
+			includePatients.addAll(mustInclude);
 		}
+		excludePatients.removeAll(mustInclude);
 		return new PatientAccess(includePatients, excludePatients);
 	}
 	

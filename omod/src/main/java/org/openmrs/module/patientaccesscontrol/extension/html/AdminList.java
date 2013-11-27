@@ -50,6 +50,7 @@ public class AdminList extends AdministrationSectionExt {
 		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
 		map.put("/module/" + Constants.MODULE_ID + "/roleProgram.list", Constants.MODULE_ID + ".roleProgram.title");
 		map.put("/module/" + Constants.MODULE_ID + "/rolePatientList.htm", Constants.MODULE_ID + ".rolePatient.title");
+		map.put("/module/" + Constants.MODULE_ID + "/userPatientList.htm", Constants.MODULE_ID + ".userPatient.title");
 		return map;
 	}
 

@@ -19,8 +19,11 @@ public class PatientAccessControlServiceUsingOrTest extends BaseModuleContextSen
 	protected static final String PROGRAM_DATASET_XML = "org/openmrs/module/" + Constants.MODULE_ID
 	        + "/include/RoleProgramServiceTest.xml";
 	
-	protected static final String PATIENT_DATASET_XML = "org/openmrs/module/" + Constants.MODULE_ID
+	protected static final String ROLE_PATIENT_DATASET_XML = "org/openmrs/module/" + Constants.MODULE_ID
 	        + "/include/RolePatientServiceTest.xml";
+	
+	protected static final String USER_PATIENT_DATASET_XML = "org/openmrs/module/" + Constants.MODULE_ID
+	        + "/include/UserPatientServiceTest.xml";
 	
 	protected static final String OR_DATASET_XML = "org/openmrs/module/" + Constants.MODULE_ID
 	        + "/include/initialTestData-Or.xml";
@@ -44,7 +47,8 @@ public class PatientAccessControlServiceUsingOrTest extends BaseModuleContextSen
 		executeDataSet(INITIAL_DATASET_XML);
 		executeDataSet(OR_DATASET_XML);
 		executeDataSet(PROGRAM_DATASET_XML);
-		executeDataSet(PATIENT_DATASET_XML);
+		executeDataSet(ROLE_PATIENT_DATASET_XML);
+		executeDataSet(USER_PATIENT_DATASET_XML);
 	}
 	
 	@Override
@@ -65,8 +69,8 @@ public class PatientAccessControlServiceUsingOrTest extends BaseModuleContextSen
 		Context.authenticate("thirdaccount", "test");
 		Context.addProxyPrivilege("View Patients");
 		Context.addProxyPrivilege("View Patient Programs");
-		Assert.assertEquals(2, getPatientAccessControlService().getCountOfPatients("").intValue());
-		Assert.assertEquals(2, getPatientAccessControlService().getCountOfPatients("Test").intValue());
+		Assert.assertEquals(3, getPatientAccessControlService().getCountOfPatients("").intValue());
+		Assert.assertEquals(3, getPatientAccessControlService().getCountOfPatients("Test").intValue());
 		
 		Context.removeProxyPrivilege("View Patients");
 		Context.removeProxyPrivilege("View Patient Programs");
@@ -135,9 +139,9 @@ public class PatientAccessControlServiceUsingOrTest extends BaseModuleContextSen
 		Context.authenticate("thirdaccount", "test");
 		Context.addProxyPrivilege("View Patients");
 		Context.addProxyPrivilege("View Patient Programs");
-		Assert.assertEquals(2, getPatientAccessControlService().getPatients("", null, 10).size());
+		Assert.assertEquals(3, getPatientAccessControlService().getPatients("", null, 10).size());
 		Assert.assertEquals(1, getPatientAccessControlService().getPatients("Horn", null, 10).size());
-		Assert.assertEquals(0, getPatientAccessControlService().getPatients("Johnny", null, 10).size());
+		Assert.assertEquals(1, getPatientAccessControlService().getPatients("Johnny", null, 10).size());
 		Context.removeProxyPrivilege("View Patients");
 		Context.removeProxyPrivilege("View Patient Programs");
 		
@@ -173,6 +177,7 @@ public class PatientAccessControlServiceUsingOrTest extends BaseModuleContextSen
 		Context.addProxyPrivilege("View Patients");
 		Context.addProxyPrivilege("View Patient Programs");
 		Assert.assertTrue(getPatientAccessControlService().hasPrivilege(Context.getPatientService().getPatient(2)));
+		Assert.assertTrue(getPatientAccessControlService().hasPrivilege(Context.getPatientService().getPatient(6)));
 		Assert.assertTrue(getPatientAccessControlService().hasPrivilege(Context.getPatientService().getPatient(7)));
 		Context.removeProxyPrivilege("View Patients");
 		Context.removeProxyPrivilege("View Patient Programs");
@@ -225,7 +230,6 @@ public class PatientAccessControlServiceUsingOrTest extends BaseModuleContextSen
 		Context.authenticate("thirdaccount", "test");
 		Context.addProxyPrivilege("View Patients");
 		Context.addProxyPrivilege("View Patient Programs");
-		Assert.assertFalse(getPatientAccessControlService().hasPrivilege(Context.getPatientService().getPatient(6)));
 		Assert.assertFalse(getPatientAccessControlService().hasPrivilege(Context.getPatientService().getPatient(8)));
 		Context.removeProxyPrivilege("View Patients");
 		Context.removeProxyPrivilege("View Patient Programs");

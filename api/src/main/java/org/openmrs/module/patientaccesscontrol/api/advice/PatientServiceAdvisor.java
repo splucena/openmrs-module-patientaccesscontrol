@@ -27,6 +27,8 @@ import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientaccesscontrol.Constants;
 import org.openmrs.module.patientaccesscontrol.api.PatientAccessControlService;
+import org.openmrs.module.patientaccesscontrol.api.RolePatientService;
+import org.openmrs.module.patientaccesscontrol.api.UserPatientService;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.aop.Advisor;
 
@@ -95,6 +97,10 @@ public class PatientServiceAdvisor implements Advisor {
 					throw new APIAuthenticationException(OpenmrsUtil.getMessage(Constants.MODULE_ID + ".privilegeRequired",
 					    "View"));
 				}
+			} else if (methodName.equals("deletePatient") && methodName.equals("purgePatient")) {
+				Patient patient = (Patient) o;
+				Context.getService(RolePatientService.class).deleteRolePatients(patient);
+				Context.getService(UserPatientService.class).deleteUserPatients(patient);
 			}
 			
 			return o;

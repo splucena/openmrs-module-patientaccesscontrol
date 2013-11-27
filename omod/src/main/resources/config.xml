@@ -32,6 +32,11 @@
 	    <class>${project.parent.groupId}.${project.parent.artifactId}.extension.html.GutterListExt</class>
 	</extension>
 	
+	<extension>
+	    <point>org.openmrs.patientDashboard.overviewBox</point>
+	    <class>${project.parent.groupId}.${project.parent.artifactId}.extension.html.PatientOverviewExt</class>
+	</extension>
+	
 	
 	<!-- Advisors -->
 	<advice>
@@ -69,21 +74,28 @@
 		<description>Able to view role patient access controls</description>
 	</privilege>
 	
+	<privilege>
+		<name>Refer Patient</name>
+		<description>Able to refer a patient to another user</description>
+	</privilege>
+	
 	<dwr>
         <allow>
-            <create creator="new" javascript="DWRPatientListService">
-                <param name="class" value="@MODULE_PACKAGE@.web.dwr.DWRPatientListService"/>
+            <create creator="new" javascript="DWRModulePatientService">
+                <param name="class" value="@MODULE_PACKAGE@.web.dwr.DWRModulePatientService"/>
                 <include method="listPatients"/>
-                <include method="listCountAndPatients"/>                
+                <include method="listCountAndPatients"/>
+                <include method="referPatientToUser"/>
             </create>
         </allow>
  
         <signatures>
             <![CDATA[
-            import @MODULE_PACKAGE@.web.dwr.DWRPatientListService;
-            DWRPatientListService.listBatchOfPatients(String searchValue, boolean includeVoided, Integer start, Integer length);
-			DWRPatientListService.listPatients(String searchValue, boolean includeVoided);
-			DWRPatientListService.listCountAndPatients(String searchValue, Integer start, Integer length, boolean getMatchCount);
+            import @MODULE_PACKAGE@.web.dwr.DWRModulePatientService;
+            DWRModulePatientService.listBatchOfPatients(String searchValue, boolean includeVoided, Integer start, Integer length);
+			DWRModulePatientService.listPatients(String searchValue, boolean includeVoided);
+			DWRModulePatientService.listCountAndPatients(String searchValue, Integer start, Integer length, boolean getMatchCount);
+			DWRModulePatientService.referPatientToUser(Integer patientId, Integer userId);
             ]]>
         </signatures>
     </dwr>

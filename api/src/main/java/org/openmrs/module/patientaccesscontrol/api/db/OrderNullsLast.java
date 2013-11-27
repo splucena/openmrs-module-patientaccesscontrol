@@ -49,7 +49,7 @@ public class OrderNullsLast extends Order {
 		StringBuffer fragment = new StringBuffer();
 		for (int i = 0; i < columns.length; i++) {
 			if (isMySQLDialect) {
-				fragment.append('-');
+				fragment.append("ISNULL(" + columns[i] + "), ");
 			}
 			boolean lower = ignoreCase && type.sqlTypes(factory)[i] == Types.VARCHAR;
 			if (lower) {
@@ -59,10 +59,8 @@ public class OrderNullsLast extends Order {
 			if (lower) {
 				fragment.append(')');
 			}
-			if (isMySQLDialect) {
-				fragment.append(ascending ? " desc" : " asc");
-			} else {
-				fragment.append(ascending ? " asc" : " desc");
+			fragment.append(ascending ? " asc" : " desc");
+			if (!isMySQLDialect) {
 				fragment.append(" NULLS LAST");
 			}
 			

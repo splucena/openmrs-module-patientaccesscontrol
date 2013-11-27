@@ -18,9 +18,11 @@ import java.lang.reflect.Method;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Role;
+import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientaccesscontrol.api.RolePatientService;
 import org.openmrs.module.patientaccesscontrol.api.RoleProgramService;
+import org.openmrs.module.patientaccesscontrol.api.UserPatientService;
 import org.springframework.aop.AfterReturningAdvice;
 
 /**
@@ -38,9 +40,11 @@ public class UserServiceAdvice implements AfterReturningAdvice {
 	public void afterReturning(Object returnVal, Method method, Object[] args, Object target) throws Throwable {
 		if (method.getName().equals("purgeRole")) {
 			Role role = (Role) args[0];
-			
 			Context.getService(RoleProgramService.class).deleteRolePrograms(role);
 			Context.getService(RolePatientService.class).deleteRolePatients(role);
+		} else if (method.getName().equals("purgeUser") || method.getName().equals("deleteUser")) {
+			User user = (User) args[0];
+			Context.getService(UserPatientService.class).deleteUserPatients(user);
 		}
 	}
 }

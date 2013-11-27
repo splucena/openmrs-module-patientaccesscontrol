@@ -18,6 +18,13 @@
 				code="patientaccesscontrol.rolePatient.title" /></a>
 	</li>
 	
+	<li
+		<c:if test='<%= request.getRequestURI().contains("/userPatient") %>'>class="active"</c:if>>
+		<a
+		href="${pageContext.request.contextPath}/module/patientaccesscontrol/userPatientList.htm"><spring:message
+				code="patientaccesscontrol.userPatient.title" /></a>
+	</li>
+	
 	<!-- Add further links here -->
 </ul>
 <h2>

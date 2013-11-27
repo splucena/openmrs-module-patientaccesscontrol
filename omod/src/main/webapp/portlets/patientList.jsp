@@ -10,7 +10,7 @@
 			min-height: 0px; height: auto !important;
 		}
 	</style>
-	<openmrs:htmlInclude file="/dwr/interface/DWRPatientListService.js"/>
+	<openmrs:htmlInclude file="/dwr/interface/DWRModulePatientService.js"/>
 	<openmrs:htmlInclude file="/scripts/jquery/dataTables/css/dataTables_jui.css"/>
 	<openmrs:htmlInclude file="/scripts/jquery/dataTables/js/jquery.dataTables.min.js"/>
 	<openmrs:htmlInclude file="/scripts/jquery-ui/js/openmrsSearch.js" />
@@ -70,7 +70,7 @@
 		//searchHandler for the Search widget
 		function doPatientSearch(text, resultHandler, getMatchCount, opts) {
 			lastSearch = text;
-			DWRPatientListService.listCountAndPatients(text, opts.start, opts.length, getMatchCount, resultHandler);
+			DWRModulePatientService.listCountAndPatients(text, opts.start, opts.length, getMatchCount, resultHandler);
 		}
 
 	</script>

@@ -22,14 +22,18 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
+import org.openmrs.Patient;
+import org.openmrs.User;
 import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.APIException;
 import org.openmrs.api.GlobalPropertyListener;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientaccesscontrol.PatientProgramModel;
+import org.openmrs.module.patientaccesscontrol.UserPatient;
 import org.openmrs.module.patientaccesscontrol.api.PatientAccessControlService;
 import org.openmrs.module.patientaccesscontrol.api.RoleProgramService;
+import org.openmrs.module.patientaccesscontrol.api.UserPatientService;
 import org.openmrs.patient.IdentifierValidator;
 import org.openmrs.patient.UnallowedIdentifierException;
 import org.openmrs.util.OpenmrsConstants;
@@ -39,9 +43,9 @@ import org.openmrs.util.OpenmrsConstants;
  * 
  * @see PatientService
  */
-public class DWRPatientListService implements GlobalPropertyListener {
+public class DWRModulePatientService implements GlobalPropertyListener {
 
-	private static final Log log = LogFactory.getLog(DWRPatientListService.class);
+	private static final Log log = LogFactory.getLog(DWRModulePatientService.class);
 
 	private static Integer maximumResults;
 
@@ -325,5 +329,32 @@ public class DWRPatientListService implements GlobalPropertyListener {
 		}
 
 		return OpenmrsConstants.GLOBAL_PROPERTY_PERSON_SEARCH_MAX_RESULTS_DEFAULT_VALUE;
+	}
+
+	/**
+	 * Refer a patient to a user.
+	 * 
+	 * @param patientId
+	 * @param userId
+	 * @return
+	 */
+	public String referPatientToUser(Integer patientId, Integer userId) {
+		Patient patient = Context.getPatientService().getPatient(patientId);
+		if (patient == null) {
+			return "Unable to find valid patient with the supplied identification information - cannot refer patient";
+		}
+		User user = Context.getUserService().getUser(userId);
+		if (user == null) {
+			return "Unable to find valid user with the supplied identification information - cannot refer patient";
+		}
+		UserPatientService svc = Context.getService(UserPatientService.class);
+		if (svc.getUserPatient(user, patient) == null) {
+			UserPatient userPatient = new UserPatient();
+			userPatient.setPatient(patient);
+			userPatient.setUser(user);
+			svc.saveUserPatient(userPatient);
+		}
+
+		return "Patient has been referred to user " + user.getPersonName().getFullName();
 	}
 }
