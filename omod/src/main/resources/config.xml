@@ -92,9 +92,9 @@
         <signatures>
             <![CDATA[
             import @MODULE_PACKAGE@.web.dwr.DWRModulePatientService;
-            DWRModulePatientService.listBatchOfPatients(String searchValue, boolean includeVoided, Integer start, Integer length);
-			DWRModulePatientService.listPatients(String searchValue, boolean includeVoided);
-			DWRModulePatientService.listCountAndPatients(String searchValue, Integer start, Integer length, boolean getMatchCount);
+            DWRModulePatientService.listBatchOfPatients(String searchValue, List<Integer> conceptIds, boolean includeVoided, Integer start, Integer length);
+			DWRModulePatientService.listPatients(String searchValue, List<Integer> conceptIds, boolean includeVoided);
+			DWRModulePatientService.listCountAndPatients(String searchValue, List<Integer> conceptIds, Integer start, Integer length, boolean getMatchCount);
 			DWRModulePatientService.referPatientToUser(Integer patientId, Integer userId);
             ]]>
         </signatures>

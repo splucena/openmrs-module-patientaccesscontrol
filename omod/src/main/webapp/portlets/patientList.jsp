@@ -28,7 +28,8 @@
 					{fieldName:"familyName", header:omsgs.familyName},
 					{fieldName:"age", header:omsgs.age},
 					{fieldName:"gender", header:omsgs.gender},
-					{fieldName:"birthdateString", header:omsgs.birthdate}
+					{fieldName:"birthdateString", header:omsgs.birthdate},
+					{fieldName:"latestObs[6099].obsId", header:"Obs ID"}
 				],
 				{
 						  doSearchWhenEmpty: true,
@@ -57,10 +58,43 @@
 
 			//set the focus to the first input box on the page(in this case the text box for the search widget)
 			var inputs = document.getElementsByTagName("input");
-		    if(inputs[0])
+		    if(inputs[0]) {
 		    	inputs[0].focus();
-
-
+		    }
+		    
+		    jQuery("#findPatients").openmrsSearch().data("openmrsSearch")._buildRow = function(rowData) {
+		    	var cols = this.options.fieldsAndHeaders;
+				rRowData = $j.map(cols, function(c) {
+					var data;
+					var fieldName = c.fieldName;
+					if (fieldName.indexOf("latestObs") == 0) {
+						var closingBracketIndex = fieldName.indexOf("]");
+						var index = fieldName.substring(10, closingBracketIndex);
+						fieldName = fieldName.substring(closingBracketIndex + 2);
+						data = rowData["latestObs"][index][fieldName];
+					} else {
+						data = rowData[fieldName];
+					}
+					
+					if(data == null) 
+						data = " ";
+					
+					return data;
+				});
+				
+				//include the attributes
+				if(this.options.attributes){
+					$j.each(this.options.attributes, function(index, a) {
+						attributeValue = rowData.attributes[a.name];
+						if(attributeValue == null) 
+							attributeValue = '';
+						
+						rRowData.push(attributeValue);
+					});
+				}
+				
+				return rRowData;
+		    }
 		});
 
 		function doSelectionHandler(index, data) {
@@ -70,7 +104,7 @@
 		//searchHandler for the Search widget
 		function doPatientSearch(text, resultHandler, getMatchCount, opts) {
 			lastSearch = text;
-			DWRModulePatientService.listCountAndPatients(text, opts.start, opts.length, getMatchCount, resultHandler);
+			DWRModulePatientService.listCountAndPatients(text, [6098, 6099], opts.start, opts.length, getMatchCount, resultHandler);
 		}
 
 	</script>

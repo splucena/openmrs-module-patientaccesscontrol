@@ -13,10 +13,13 @@
  */
 package org.openmrs.module.patientaccesscontrol.web.dwr;
 
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
 import org.openmrs.Program;
+import org.openmrs.web.dwr.ObsListItem;
 import org.openmrs.web.dwr.PatientListItem;
 
 public class ModulePatientListItem extends PatientListItem {
@@ -25,20 +28,27 @@ public class ModulePatientListItem extends PatientListItem {
 
 	private String programName;
 
+	private Map<Integer, ObsListItem> latestObs;
+
 	public ModulePatientListItem() {
 	}
 
 	public ModulePatientListItem(Patient patient, Program program) {
-		this(patient, program, null);
+		this(patient, program, null, null);
 	}
 
-	public ModulePatientListItem(Patient patient, Program program, String searchName) {
+	public ModulePatientListItem(Patient patient, Program program, String searchName,
+			Map<Integer, ObsListItem> latestObs) {
 		super(patient, searchName);
 
 		if (program == null) {
 			programName = null;
 		} else {
 			programName = program.getName();
+		}
+
+		if (latestObs != null) {
+			this.latestObs = latestObs;
 		}
 	}
 
@@ -85,6 +95,14 @@ public class ModulePatientListItem extends PatientListItem {
 
 	public void setProgramName(String programName) {
 		this.programName = programName;
+	}
+
+	public Map<Integer, ObsListItem> getLatestObs() {
+		return latestObs;
+	}
+
+	public void setLatestObs(Map<Integer, ObsListItem> latestObs) {
+		this.latestObs = latestObs;
 	}
 
 }

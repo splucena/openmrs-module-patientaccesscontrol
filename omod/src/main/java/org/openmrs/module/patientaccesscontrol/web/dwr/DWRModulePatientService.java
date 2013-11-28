@@ -13,8 +13,10 @@
  */
 package org.openmrs.module.patientaccesscontrol.web.dwr;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -22,11 +24,14 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
+import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.User;
 import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.APIException;
+import org.openmrs.api.ConceptService;
 import org.openmrs.api.GlobalPropertyListener;
+import org.openmrs.api.ObsService;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientaccesscontrol.PatientProgramModel;
@@ -37,6 +42,7 @@ import org.openmrs.module.patientaccesscontrol.api.UserPatientService;
 import org.openmrs.patient.IdentifierValidator;
 import org.openmrs.patient.UnallowedIdentifierException;
 import org.openmrs.util.OpenmrsConstants;
+import org.openmrs.web.dwr.ObsListItem;
 
 /**
  * DWR patient methods. The methods in here are used in the webapp to get data from the database via javascript calls.
@@ -68,7 +74,7 @@ public class DWRModulePatientService implements GlobalPropertyListener {
 	 * @should logged in user should load their own patient object
 	 */
 	public Collection<Object> listPatients(String searchValue, boolean includeVoided) {
-		return listBatchOfPatients(searchValue, includeVoided, null, null);
+		return listBatchOfPatients(searchValue, new ArrayList<Integer>(), includeVoided, null, null);
 	}
 
 	/**
@@ -87,7 +93,8 @@ public class DWRModulePatientService implements GlobalPropertyListener {
 	 * @return Collection<Object> of PatientListItem or String
 	 * @since 1.8
 	 */
-	public Collection<Object> listBatchOfPatients(String searchValue, boolean includeVoided, Integer start,
+	public Collection<Object> listBatchOfPatients(String searchValue, List<Integer> conceptIds, boolean includeVoided,
+			Integer start,
 			Integer length) {
 		if (maximumResults == null) {
 			maximumResults = getMaximumSearchResults();
@@ -100,6 +107,9 @@ public class DWRModulePatientService implements GlobalPropertyListener {
 		List<Object> patientList = new Vector<Object>();
 
 		PatientAccessControlService ps = Context.getService(PatientAccessControlService.class);
+		ConceptService cs = Context.getConceptService();
+		ObsService os = Context.getObsService();
+
 		Collection<PatientProgramModel> patients;
 
 		try {
@@ -112,7 +122,16 @@ public class DWRModulePatientService implements GlobalPropertyListener {
 
 		patientList = new Vector<Object>(patients.size());
 		for (PatientProgramModel p : patients) {
-			patientList.add(new ModulePatientListItem(p.getPatient(), p.getProgram(), searchValue));
+			Map<Integer, ObsListItem> latestObs = new LinkedHashMap<Integer, ObsListItem>();
+			for (Integer conceptId : conceptIds) {
+				List<Obs> obs = os.getLastNObservations(1, p.getPatient(), cs.getConcept(conceptId), false);
+				if (obs.isEmpty()) {
+					latestObs.put(conceptId, new ObsListItem());
+				} else {
+					latestObs.put(conceptId, new ObsListItem(obs.get(0), Context.getLocale()));
+				}
+			}
+			patientList.add(new ModulePatientListItem(p.getPatient(), p.getProgram(), searchValue, latestObs));
 		}
 		// no results found and a number was in the search --
 		// should check whether the check digit is correct.
@@ -176,7 +195,8 @@ public class DWRModulePatientService implements GlobalPropertyListener {
 	 * @should not signal for a new search if the new search value has no matches
 	 * @should match patient with identifiers that contain no digit
 	 */
-	public Map<String, Object> listCountAndPatients(String searchValue, Integer start, Integer length,
+	public Map<String, Object> listCountAndPatients(String searchValue, List<Integer> conceptIds, Integer start,
+			Integer length,
 			boolean getMatchCount) throws APIException {
 
 		// Map to return
@@ -276,7 +296,7 @@ public class DWRModulePatientService implements GlobalPropertyListener {
 			// if we have any matches or this isn't the first ajax call when the caller
 			// requests for the count
 			if (patientCount > 0 || !getMatchCount) {
-				objectList = listBatchOfPatients(searchValue, false, start, length);
+				objectList = listBatchOfPatients(searchValue, conceptIds, false, start, length);
 			}
 
 			resultsMap.put("count", patientCount);
