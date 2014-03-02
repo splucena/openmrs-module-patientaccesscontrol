@@ -1,4 +1,4 @@
-openmrs-module-programaccesscontrol
+openmrs-module-patientaccesscontrol
 ================================
 
-Program-based access control for OpenMRS
+Provides additional access control for patients, based on role and enrolled program/s
