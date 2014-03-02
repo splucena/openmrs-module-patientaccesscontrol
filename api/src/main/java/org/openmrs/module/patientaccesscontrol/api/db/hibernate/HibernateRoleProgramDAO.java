@@ -194,16 +194,15 @@ public class HibernateRoleProgramDAO implements RoleProgramDAO {
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<Integer> getIncludedPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
-	                                         boolean matchIdentifierExactly, boolean searchOnNamesOrIdentifiers,
-	                                         List<Program> includePrograms) throws DAOException {
+	                                         boolean matchIdentifierExactly, List<Program> includePrograms)
+	    throws DAOException {
 		if (includePrograms.isEmpty()) {
 			return new ArrayList<Integer>();
 		}
 		Criteria criteria = createPatientCriteria(includePrograms);
 		
 		criteria = new PatientSearchCriteria(sessionFactory, criteria).prepareCriteria(name, identifier, identifierTypes,
-		    matchIdentifierExactly, false, searchOnNamesOrIdentifiers).setProjection(
-		    Projections.distinct(Projections.property("patientId")));
+		    matchIdentifierExactly, false).setProjection(Projections.distinct(Projections.property("patientId")));
 		
 		return criteria.list();
 	}

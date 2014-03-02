@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
@@ -162,13 +161,8 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	public Integer getCountOfPatients(String query) {
 		List<PatientIdentifierType> emptyList = new Vector<PatientIdentifierType>();
 		PatientAccess patientAccess = getPatientAccess();
-		boolean searchOnNamesOrIdentifiers = true;
-		if (StringUtils.isEmpty(query)) {
-			query = null;
-			searchOnNamesOrIdentifiers = false;
-		}
-		return OpenmrsUtil.convertToInteger(dao.getCountOfPatients(null, query, emptyList, false,
-		    searchOnNamesOrIdentifiers, patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients()));
+		return OpenmrsUtil.convertToInteger(dao.getCountOfPatients(query, null, emptyList, false,
+		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients()));
 	}
 	
 	/**
@@ -178,12 +172,7 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	@Override
 	public List<Patient> getPatients(String query, Integer start, Integer length) throws APIException {
 		PatientAccess patientAccess = getPatientAccess();
-		boolean searchOnNamesOrIdentifiers = true;
-		if (StringUtils.isEmpty(query)) {
-			query = null;
-			searchOnNamesOrIdentifiers = false;
-		}
-		return dao.getPatients(query, null, Collections.EMPTY_LIST, false, start, length, searchOnNamesOrIdentifiers,
+		return dao.getPatients(query, null, Collections.EMPTY_LIST, false, start, length,
 		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients());
 	}
 	
@@ -194,12 +183,7 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	@Override
 	public List<PatientProgramModel> getPatientPrograms(String query, Integer start, Integer length) throws APIException {
 		PatientAccess patientAccess = getPatientAccess();
-		boolean searchOnNamesOrIdentifiers = true;
-		if (StringUtils.isEmpty(query)) {
-			query = null;
-			searchOnNamesOrIdentifiers = false;
-		}
-		return dao.getPatientPrograms(query, null, Collections.EMPTY_LIST, false, start, length, searchOnNamesOrIdentifiers,
+		return dao.getPatientPrograms(query, null, Collections.EMPTY_LIST, false, start, length,
 		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients(), getIncludePrograms());
 	}
 	
@@ -210,14 +194,8 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	public Integer getCountOfPatientPrograms(String query) {
 		List<PatientIdentifierType> emptyList = new Vector<PatientIdentifierType>();
 		PatientAccess patientAccess = getPatientAccess();
-		boolean searchOnNamesOrIdentifiers = true;
-		if (StringUtils.isEmpty(query)) {
-			query = null;
-			searchOnNamesOrIdentifiers = false;
-		}
-		return OpenmrsUtil.convertToInteger(dao.getCountOfPatientPrograms(null, query, emptyList, false,
-		    searchOnNamesOrIdentifiers, patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients(),
-		    getIncludePrograms()));
+		return OpenmrsUtil.convertToInteger(dao.getCountOfPatientPrograms(query, null, emptyList, false,
+		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients(), getIncludePrograms()));
 		
 	}
 	
@@ -225,7 +203,7 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	public List<Patient> getPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
 	                                 boolean matchIdentifierExactly, Integer start, Integer length) throws APIException {
 		PatientAccess patientAccess = getPatientAccess();
-		return dao.getPatients(name, identifier, identifierTypes, matchIdentifierExactly, start, length, true,
+		return dao.getPatients(name, identifier, identifierTypes, matchIdentifierExactly, start, length,
 		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients());
 	}
 	
