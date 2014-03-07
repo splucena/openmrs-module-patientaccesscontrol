@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
@@ -159,10 +160,21 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	 */
 	@Override
 	public Integer getCountOfPatients(String query) {
+		int count = 0;
+		if (StringUtils.isBlank(query)) {
+			return count;
+		}
 		List<PatientIdentifierType> emptyList = new Vector<PatientIdentifierType>();
 		PatientAccess patientAccess = getPatientAccess();
-		return OpenmrsUtil.convertToInteger(dao.getCountOfPatients(query, null, emptyList, false,
-		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients()));
+		// if there is a number in the query string
+		if (query.matches(".*\\d+.*")) {
+			return OpenmrsUtil.convertToInteger(dao.getCountOfPatients(null, query, emptyList, false,
+			    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients()));
+		} else {
+			// there is no number in the string, search on name
+			return OpenmrsUtil.convertToInteger(dao.getCountOfPatients(query, null, emptyList, false,
+			    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients()));
+		}
 	}
 	
 	/**
@@ -171,9 +183,21 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Patient> getPatients(String query, Integer start, Integer length) throws APIException {
+		List<Patient> patients = new Vector<Patient>();
+		if (StringUtils.isBlank(query)) {
+			return patients;
+		}
+		
 		PatientAccess patientAccess = getPatientAccess();
-		return dao.getPatients(query, null, Collections.EMPTY_LIST, false, start, length,
-		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients());
+		
+		// if there is a number in the query string
+		if (query.matches(".*\\d+.*")) {
+			return dao.getPatients(null, query, Collections.EMPTY_LIST, false, start, length,
+			    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients());
+		} else {
+			return dao.getPatients(query, null, Collections.EMPTY_LIST, false, start, length,
+			    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients());
+		}
 	}
 	
 	/**
@@ -183,8 +207,14 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	@Override
 	public List<PatientProgramModel> getPatientPrograms(String query, Integer start, Integer length) throws APIException {
 		PatientAccess patientAccess = getPatientAccess();
-		return dao.getPatientPrograms(query, null, Collections.EMPTY_LIST, false, start, length,
-		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients(), getIncludePrograms());
+		if (query.matches(".*\\d+.*")) {
+			return dao.getPatientPrograms(null, query, Collections.EMPTY_LIST, false, start, length,
+			    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients(), getIncludePrograms());
+		} else {
+			// there is no number in the string, search on name
+			return dao.getPatientPrograms(query, null, Collections.EMPTY_LIST, false, start, length,
+			    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients(), getIncludePrograms());
+		}
 	}
 	
 	/**
@@ -194,9 +224,15 @@ public class PatientAccessControlServiceImpl extends BaseOpenmrsService implemen
 	public Integer getCountOfPatientPrograms(String query) {
 		List<PatientIdentifierType> emptyList = new Vector<PatientIdentifierType>();
 		PatientAccess patientAccess = getPatientAccess();
-		return OpenmrsUtil.convertToInteger(dao.getCountOfPatientPrograms(query, null, emptyList, false,
-		    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients(), getIncludePrograms()));
 		
+		if (query.matches(".*\\d+.*")) {
+			return OpenmrsUtil.convertToInteger(dao.getCountOfPatientPrograms(null, query, emptyList, false,
+			    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients(), getIncludePrograms()));
+		} else {
+			// there is no number in the string, search on name
+			return OpenmrsUtil.convertToInteger(dao.getCountOfPatientPrograms(query, null, emptyList, false,
+			    patientAccess.getIncludedPatients(), patientAccess.getExcludedPatients(), getIncludePrograms()));
+		}
 	}
 	
 	@Override
