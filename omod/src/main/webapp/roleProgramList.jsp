@@ -36,7 +36,10 @@
 							${program.programId}
 						</td>
 						<td valign="top">
-							<a href="../../admin/programs/program.form?programId=${program.programId}">${program.name}</a>
+						<c:choose>
+						      <c:when test="${program.programId == null}">${program.name}</c:when>						
+						      <c:otherwise><a href="../../admin/programs/program.form?programId=${program.programId}">${program.name}</a></c:otherwise>
+						</c:choose>						
 						</td>
 						<td valign="top">
 							${program.description}

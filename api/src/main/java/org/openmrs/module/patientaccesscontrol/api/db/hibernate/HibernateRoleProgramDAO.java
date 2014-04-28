@@ -232,12 +232,17 @@ public class HibernateRoleProgramDAO implements RoleProgramDAO {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Integer> getExcludedPatients(Collection<Program> programs) {
-		DetachedCriteria subquery = DetachedCriteria.forClass(PatientProgram.class)
-		        .add(Restrictions.in("program", programs))
-		        .setProjection(Projections.distinct(Projections.property("patient")));
-		
-		return sessionFactory.getCurrentSession().createCriteria(PatientProgram.class)
-		        .add(Subqueries.propertyNotIn("patient", subquery)).createAlias("patient", "p")
-		        .setProjection(Projections.distinct(Projections.property("p.patientId"))).list();
+		if (programs.isEmpty()) {
+			return sessionFactory.getCurrentSession().createCriteria(PatientProgram.class).createAlias("patient", "p")
+			        .setProjection(Projections.distinct(Projections.property("p.patientId"))).list();
+		} else {
+			DetachedCriteria subquery = DetachedCriteria.forClass(PatientProgram.class)
+			        .add(Restrictions.in("program", programs))
+			        .setProjection(Projections.distinct(Projections.property("patient")));
+			
+			return sessionFactory.getCurrentSession().createCriteria(PatientProgram.class)
+			        .add(Subqueries.propertyNotIn("patient", subquery)).createAlias("patient", "p")
+			        .setProjection(Projections.distinct(Projections.property("p.patientId"))).list();
+		}
 	}
 }
