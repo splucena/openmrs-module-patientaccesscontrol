@@ -117,7 +117,8 @@ public interface RoleProgramDAO {
 	public List<Program> getPrograms(Set<Role> roles) throws DAOException;
 	
 	List<Integer> getIncludedPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
-	                                  boolean matchIdentifierExactly, List<Program> includePrograms) throws DAOException;
+	                                  boolean matchIdentifierExactly, boolean searchOnNamesOrIdentifiers,
+	                                  List<Program> includePrograms) throws DAOException;
 	
 	List<Integer> getExcludedPatients(Collection<Program> programs);
 	

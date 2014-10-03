@@ -202,14 +202,14 @@ public class RoleProgramServiceImpl extends BaseOpenmrsService implements RolePr
 		if (canViewPatientsNotInPrograms()) {
 			return null;
 		}
-		return dao.getIncludedPatients(null, null, Collections.EMPTY_LIST, false, getPrograms());
+		return dao.getIncludedPatients(null, null, Collections.EMPTY_LIST, false, false, getPrograms());
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	@Transactional(readOnly = true)
 	public List<Integer> getExplicitlyIncludedPatients() {
-		return dao.getIncludedPatients(null, null, Collections.EMPTY_LIST, false, getPrograms());
+		return dao.getIncludedPatients(null, null, Collections.EMPTY_LIST, false, false, getPrograms());
 	}
 	
 }

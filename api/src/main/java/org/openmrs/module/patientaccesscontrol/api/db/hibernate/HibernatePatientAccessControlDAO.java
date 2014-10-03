@@ -69,8 +69,8 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 	 */
 	@Override
 	public Long getCountOfPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
-	                               boolean matchIdentifierExactly, Collection<Integer> includePatients,
-	                               Collection<Integer> excludePatients) {
+	                               boolean matchIdentifierExactly, boolean searchOnNamesOrIdentifiers,
+	                               Collection<Integer> includePatients, Collection<Integer> excludePatients) {
 		if (includePatients != null && includePatients.isEmpty()) {
 			return 0L;
 		}
@@ -78,7 +78,7 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 		Criteria criteria = createPatientCriteria(includePatients, excludePatients, null, false, false);
 		
 		criteria = new PatientSearchCriteria(sessionFactory, criteria).prepareCriteria(name, identifier, identifierTypes,
-		    matchIdentifierExactly, false).setProjection(Projections.countDistinct("patientId"));
+		    matchIdentifierExactly, false, searchOnNamesOrIdentifiers).setProjection(Projections.countDistinct("patientId"));
 		
 		return (Long) criteria.uniqueResult();
 	}
@@ -91,15 +91,15 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 	@SuppressWarnings("unchecked")
 	public List<Patient> getPatients(String name, String identifier, List<PatientIdentifierType> identifierTypes,
 	                                 boolean matchIdentifierExactly, Integer start, Integer length,
-	                                 Collection<Integer> includePatients, Collection<Integer> excludePatients)
-	    throws DAOException {
+	                                 boolean searchOnNamesOrIdentifiers, Collection<Integer> includePatients,
+	                                 Collection<Integer> excludePatients) throws DAOException {
 		if (includePatients != null && includePatients.isEmpty()) {
 			return new ArrayList<Patient>();
 		}
 		Criteria criteria = createPatientCriteria(includePatients, excludePatients, null, false, false);
 		
 		criteria = new PatientSearchCriteria(sessionFactory, criteria).prepareCriteria(name, identifier, identifierTypes,
-		    matchIdentifierExactly, true);
+		    matchIdentifierExactly, true, searchOnNamesOrIdentifiers);
 		
 		if (start != null) {
 			criteria.setFirstResult(start);
@@ -124,8 +124,9 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 	 */
 	@Override
 	public Long getCountOfPatientPrograms(String name, String identifier, List<PatientIdentifierType> identifierTypes,
-	                                      boolean matchIdentifierExactly, Collection<Integer> includePatients,
-	                                      Collection<Integer> excludePatients, Collection<Program> includePrograms) {
+	                                      boolean matchIdentifierExactly, boolean searchOnNamesOrIdentifiers,
+	                                      Collection<Integer> includePatients, Collection<Integer> excludePatients,
+	                                      Collection<Program> includePrograms) {
 		if (includePatients != null && includePatients.isEmpty()) {
 			return 0L;
 		}
@@ -133,7 +134,7 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 		Criteria criteria = createPatientCriteria(includePatients, excludePatients, includePrograms, true, false);
 		
 		criteria = new PatientSearchCriteria(sessionFactory, criteria).prepareCriteria(name, identifier, identifierTypes,
-		    matchIdentifierExactly, false).setProjection(
+		    matchIdentifierExactly, false, searchOnNamesOrIdentifiers).setProjection(
 		    ExtraProjections.countMultipleDistinct("program.programId", true).addProperty("patientId"));
 		
 		return (Long) criteria.uniqueResult();
@@ -148,6 +149,7 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 	public List<PatientProgramModel> getPatientPrograms(String name, String identifier,
 	                                                    List<PatientIdentifierType> identifierTypes,
 	                                                    boolean matchIdentifierExactly, Integer start, Integer length,
+	                                                    boolean searchOnNamesOrIdentifiers,
 	                                                    Collection<Integer> includePatients,
 	                                                    Collection<Integer> excludePatients,
 	                                                    Collection<Program> includePrograms) throws DAOException {
@@ -158,7 +160,7 @@ public class HibernatePatientAccessControlDAO implements PatientAccessControlDAO
 		Criteria criteria = createPatientCriteria(includePatients, excludePatients, includePrograms, true, true);
 		
 		criteria = new PatientSearchCriteria(sessionFactory, criteria).prepareCriteria(name, identifier, identifierTypes,
-		    matchIdentifierExactly, true).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+		    matchIdentifierExactly, true, searchOnNamesOrIdentifiers).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
 		
 		if (start != null) {
 			criteria.setFirstResult(start);
